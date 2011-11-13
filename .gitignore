@@ -1,0 +1,7 @@
+moviehub-server/.classpath
+moviehub-server/.project
+moviehub-server/.settings/
+moviehub-server/war/WEB-INF/classess
+*.class
+*~
+*.DS_STORE
