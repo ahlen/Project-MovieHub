@@ -8,7 +8,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 
 @Controller
-@RequestMapping("/api/demos")
+@RequestMapping("/demos")
 public class DemoController {
 	public class DemoObject {
 		private int id;
