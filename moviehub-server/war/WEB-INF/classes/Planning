@@ -1,0 +1,21 @@
+# Auth
+GET /auth/								client_id, redirect_uri => code
+GET /auth/token							client_id, client_secret, code => auth_token
+
+# general
+GET /search								text
+
+# users
+GET /me									-
+GET /users/{user_id}					user_id
+GET /users/{user_id}/activity			user id, limit (size)
+
+# movies
+GET /movies/{movie_id}					movie_id, client_id, client_secret
+POST /movies/{movie_id}/like				movie_id, auth_token
+POST /movies/{movie_id}/dislike			movie_id, auth_token
+PUT /mo
+GET /movies/toplist						limit
+
+# polls
+# discussions

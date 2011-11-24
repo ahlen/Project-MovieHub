@@ -13,16 +13,16 @@
 
 	<!-- The configuration of the application. -->
 
-	<context:annotation-config />
+	<!-- context:annotation-config />-->
 
 	<!-- <bean class="org.springframework.web.servlet.view.BeanNameViewResolver" />-->
 
-	 <!-- <bean class="org.springframework.orm.jdo.LocalPersistenceManagerFactoryBean" name="persistenceManagerFactory">
-		The name of the PMF is in META-INF/jdoconfig.xml
+	<!-- <bean class="org.springframework.orm.jdo.LocalPersistenceManagerFactoryBean" name="persistenceManagerFactory">
+		 The name of the PMF is in META-INF/jdoconfig.xml 
 		<property name="persistenceManagerFactoryName" value="transactions-optional" />
 	</bean>-->
 	
-	<bean id="jsonView" class="org.springframework.web.servlet.view.json.MappingJacksonJsonView"/>
+	<!--<bean id="jsonView" class="org.springframework.web.servlet.view.json.MappingJacksonJsonView"/>-->
 
 	<!-- Resolves view names to protected .jsp resources within the /WEB-INF/views directory -->
 	<!-- <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">

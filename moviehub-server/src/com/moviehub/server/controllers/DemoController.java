@@ -8,7 +8,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 
 @Controller
-@RequestMapping("/demos")
+@RequestMapping("/api")
 public class DemoController {
 	public class DemoObject {
 		private int id;
@@ -28,7 +28,7 @@ public class DemoController {
 		}
 	}
 	
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(value="index", method = RequestMethod.GET)
 	public @ResponseBody DemoObject index() {
 		DemoObject obj = new DemoObject(5, "Mikael");
 		return obj;

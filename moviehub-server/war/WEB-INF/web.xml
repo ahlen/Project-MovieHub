@@ -1,27 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xmlns="http://java.sun.com/xml/ns/javaee"
-xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
-<!-- 	<servlet>
-		<servlet-name>Moviehub_server</servlet-name>
-		<servlet-class>com.moviehub.server.Moviehub_serverServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>Moviehub_server</servlet-name>
-		<url-pattern>/moviehub_server</url-pattern>
-	</servlet-mapping> -->
-	
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5">
+	<!-- <servlet> <servlet-name>Moviehub_server</servlet-name> <servlet-class>com.moviehub.server.Moviehub_serverServlet</servlet-class> 
+		</servlet> <servlet-mapping> <servlet-name>Moviehub_server</servlet-name> 
+		<url-pattern>/moviehub_server</url-pattern> </servlet-mapping> -->
+
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>/WEB-INF/application-context.xml</param-value>
 	</context-param>
-	
+
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
-	
+
 	<!-- jersey servlet for our API -->
 	<servlet>
 		<servlet-name>jersey</servlet-name>
@@ -31,24 +26,37 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 			<param-value>com.moviehub.server.api</param-value>
 		</init-param>
 	</servlet>
-	
-	<servlet-mapping>
-		<servlet-name>jersey</servlet-name>
-		<url-pattern>/api/</url-pattern>
-	</servlet-mapping>
-	
+
 	<servlet>
 		<servlet-name>dispatcher</servlet-name>
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
-	
+
+	<servlet-mapping>
+		<servlet-name>jersey</servlet-name>
+		<url-pattern>/api/*</url-pattern>
+	</servlet-mapping>
+
 	<servlet-mapping>
 		<servlet-name>dispatcher</servlet-name>
-		<url-pattern>/public/</url-pattern>
+		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
-	
+
+
+
+
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>
+
+	<filter>
+		<filter-name>ApiClientAuthenticationFilter</filter-name>
+		<filter-class>com.moviehub.server.api.web.ApiClientAuthenticationFilter</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>ApiClientAuthenticationFilter</filter-name>
+		<url-pattern>/api/*</url-pattern>
+	</filter-mapping>
 </web-app>
