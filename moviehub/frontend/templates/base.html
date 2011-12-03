@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moviehub</title>
+
+    <link rel="stylesheet" href="/stylesheets/moviehub.css" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Droid+Sans:400,700|Luckiest+Guy" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <div class="container">
+        <div id="header">
+            <h1><a href="/">Moviehub</a></h1>
+
+            <div id="search">
+                <form action="/search/" style="margin: 0; padding: 0;">
+                    <input type="text" name="q" id="q" class="xlarge">
+                </form>
+            </div>
+            
+            <ul>
+                <li style="float: right;"><a style="padding-right: 0;" href="/login/">Login</a> </li>
+                <li><a href="/movies/">Movies</a></li>
+                <li><a href="/discussions/">Discussions</a></li>
+                <li><a href="/polls/">Polls</a></li>
+            </ul>
+        </div>
+        
+        <!-- content -->
+        {% block content %}
+            <div id="row">
+                <div class="span16">
+                    <a href="/movies/1/">Movie :)</a>
+                </div>
+            </div>
+        {% endblock %}
+
+        <div id="row">
+            <div class="span16">
+                <ul>
+                {% for movie in movies %}
+                    <li>
+                        {{ movie.title }} ({{ movie.imdb_id }})
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

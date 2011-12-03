@@ -1,8 +1,7 @@
-#moviehub-server/.classpath
-#moviehub-server/.project
-moviehub-server/.settings/
-moviehub-server/war/WEB-INF/classess
-*.class
+.pyc
+*.pyc
 *~
 *.DS_Store
 .DS_Store
+local_settings.py
+.idea/

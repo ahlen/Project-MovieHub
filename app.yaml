@@ -1,0 +1,23 @@
+application: movie-hub
+version: 3
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+handlers:
+- url: /favicon\.ico
+  static_files: favicon.ico
+  upload: favicon\.ico
+
+- url: /stylesheets
+  static_dir: moviehub/frontend/static/stylesheets
+
+- url: /.*
+  script: moviehub.app
+
+libraries:
+- name: jinja2
+  version: latest
+
+- name: markupsafe
+  version: latest

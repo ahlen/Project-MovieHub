@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="row">
+        <div class="span16">
+            <h1>Create new article</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span12">
+            <form action="{{ request.path }}" method="post">
+                <fieldset>
+                    <div class="clearfix">
+                        <label for="title">Title</label>
+
+                        <div class="input">
+                            <input name="title" class="xlarge" size="30">
+                        </div>
+                        {% if form.title.errors %}
+                            <ul class="errors">{% for error in form.title.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                        {% endif %}
+                    </div>
+                    <div class="clearfix">
+                        <label for="content">Content</label>
+
+                        <div class="input">
+                            <textarea name="content" class="xxlarge" rows="8"></textarea>
+                        </div>
+                        {% if form.title.errors %}
+                            <ul class="errors">{% for error in form.title.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                        {% endif %}
+                    </div>
+                    <div class="actions">
+                        <input class="btn primary" value="Save" type="submit">
+                    </div>
+
+                </fieldset>
+            </form>
+        </div>
+        <div class="span4">
+            <h3>Latest articles</h3>
+            <ul>
+            {% for article in articles %}
+                <li>
+                    <a href="{{ url_for("frontend.show_article", id=article.id) }}">{{ article.title }}</a> at {{ article.created_at }}
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="row">
+        <div class="span16">
+            <h1>{{ movie.title }}</h1>
+            <p>
+                IMDB Id: {{ movie.imdb_id }}
+            </p>
+        </div>
+    </div>
+{% endblock %}

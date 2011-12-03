@@ -1,0 +1,64 @@
+@import "bootstrap.css";
+
+body {
+    background: #fcfaf8;
+    font-family: "Droid Sans", sans-serif;
+}
+
+.container {
+    margin-top: 15px;
+}
+
+#header {
+    overflow: hidden;
+    border-bottom: 1px solid #dbd9d7;
+    margin-bottom: 10px;
+}
+
+#header h1 {
+    float: left;
+    color: #c20a6e;
+    font-family: "Luckiest Guy", arial, serif;
+    font-size: 30px;
+    padding: 0px 10px 0 0;
+    height: 20px;
+}
+
+#header h1 a {
+    color: #c20a6e;
+}
+
+#header h1 a:hover {
+    color: #a1004c;
+    text-decoration: none;
+}
+
+#search {
+    float: left;
+}
+
+#header ul {
+    /*float: left;*/
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#header ul > li {
+    float: left;
+    display: block;
+}
+
+#header li a {
+    display: block;
+    float: none;
+    padding: 8px 8px;
+    line-height: 10px;
+    font-size: 16px;
+}
+
+#header li a:hover {
+    text-decoration: none;
+    color: #002a54;
+    border-radius: 3px;
+}
