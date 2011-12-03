@@ -21,6 +21,15 @@ class ApiBlueprint(Blueprint):
             return f(*args, **kwargs)
         return decorated_function
 
+    @property
+    def tmdb_api_key(self):
+        try:
+            from moviehub.local_settings import TMDB_API_KEY
+        except:
+            from moviehub.settings import TMDB_API_KEY
+
+        return TMDB_API_KEY
+
 api = ApiBlueprint("api", __name__)
 
 #from views import movies # so our routes are added to central routing.

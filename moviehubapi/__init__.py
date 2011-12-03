@@ -7,8 +7,8 @@ import json
 from moviehubapi import exceptions, security, models
 
 class Moviehub(object):
-    #API_URL = "http://localhost:8081/api"
-    API_URL = "https://3.movie-hub.appspot.com/api"
+    API_URL = "http://localhost:8081/api"
+    #API_URL = "https://3.movie-hub.appspot.com/api"
 
     """
     This represent the HTTP API from Moviehub
@@ -16,7 +16,7 @@ class Moviehub(object):
     ...
     """
 
-    def __init__(self, client_id, client_secret, access_token=None, redirect_uri=None):
+    def __init__(self, client_id, client_secret, redirect_uri=None, access_token=None):
         if not client_id and not secret:
             raise Exception("You need to provide both client_id and secret " \
                             "which you can find on https://movie-hub.appspot.com/admin/apps/")
@@ -31,7 +31,7 @@ class Moviehub(object):
     # the endpoint require "client with user access"
     # so we can handle the such logic on client side
     # even if it's not necessary to handle here.
-    def required_access_token(f):
+    def require_access_token(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             pass # check logic
@@ -44,7 +44,7 @@ class Moviehub(object):
         """
         pass
 
-    @required_access_token
+    @require_access_token
     def me(self, access_token=None):
         """
         Give basic information about the user if access_token is provided
@@ -105,8 +105,9 @@ class Moviehub(object):
         if endpoint and endpoint[0] != "/":
             endpoint = "/" + endpoint
         if body:
-            #body=urllib.urlencode([k, v.encode("utf-8")] for k,v in body.items())
-            body=urllib.urlencode(body)
+            # thanks to http://stackoverflow.com/a/788055
+            body=urllib.urlencode(dict([k, v.encode('utf-8')] for k, v in body.items()))
+            #body=urllib.urlencode(body)
         response, content = http.request(self.API_URL + endpoint, method=method, headers=headers, body=body)
 
         return response, content

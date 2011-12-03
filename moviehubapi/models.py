@@ -3,14 +3,22 @@
 import datetime
 
 class Movie(object):
-    def __init__(self, id, title, imdb_id):
+    def __init__(self, id, title, imdb_id, image_url=None, description=None):
         self.id = id
         self.title = title
         self.imdb_id = imdb_id
+        self.image_url = image_url
+        self.description = description
 
     @classmethod
     def from_dict(cls, data):
-        return Movie(data.get("id"), data.get("title"), data.get("imdb_id"))
+        return Movie(
+            data.get("id"),
+            data.get("title"),
+            data.get("imdb_id"),
+            data.get("image_url"),
+            data.get("description")
+        )
 
 class Article(object):
     def __init__(self, id, title, content, created_at):

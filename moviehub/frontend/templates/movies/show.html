@@ -7,6 +7,9 @@
             <p>
                 IMDB Id: {{ movie.imdb_id }}
             </p>
+            {% if movie.image_url %}
+            <img src="{{ movie.image_url }}" alt="">
+            {% endif %}
         </div>
     </div>
 {% endblock %}

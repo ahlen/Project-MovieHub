@@ -14,10 +14,10 @@ from oauth2client.client import AccessTokenCredentialsError
 
 from google.appengine.api import urlfetch
 
-#try:
-#    from moviehub import local_settings as settings
-#except:
-#    from moviehub import settings
+try:
+    from moviehub import local_settings as settings
+except:
+    from moviehub import settings
 
 from moviehub import local_settings
 
@@ -34,8 +34,8 @@ app.register_blueprint(frontend)
 # TODO: move client_id and client_secret to local settings
 # to hide from public repository
 oauth = OAuth2WebServerFlow(
-    client_id=local_settings.GOOGLE_OAUTH2_ID,#"",#app.config.GOOGLE_OAUTH2_ID,
-    client_secret=local_settings.GOOGLE_OAUTH2_SECRET,#"",#app.config.GOOGLE_OAUTH2_SECRET,
+    client_id=settings.GOOGLE_OAUTH2_ID,#"",#app.config.GOOGLE_OAUTH2_ID,
+    client_secret=settings.GOOGLE_OAUTH2_SECRET,#"",#app.config.GOOGLE_OAUTH2_SECRET,
     scope = "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
     redirect_uri="https://3.movie-hub.appspot.com/oauth2callback",
 ) # TODO: change to scope: https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile

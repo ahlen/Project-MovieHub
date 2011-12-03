@@ -18,7 +18,41 @@ movies = {
 
 @api.route("/api/movies/<int:movie_id>/", methods=["GET"])
 def show_movie(movie_id):
-    return json.dumps(movies.get(movie_id).to_dict())
+    from moviehub.api import tmdb
+
+    movie = movies.get(movie_id)
+    tmdb_data = tmdb.extract_movie_data(movie.imdb_id)
+
+    movie_result = movie.to_dict()
+    movie_result.update(
+        image_url=tmdb_data.get("image_url", ""),
+        description=tmdb_data.get("description", "")
+    )
+
+    return json.dumps(movie_result)
+
+    #return json.dumps(tmdb.extract_movie_data("tt0137523"))
+    # http://api.themoviedb.org/2.1/Movie.imdbLookup/en/json/a314e35b02e9cad181b1f37c96989b95/tt0137523
+    #url = "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/json/a314e35b02e9cad181b1f37c96989b95/tt0137523"
+
+    #http = httplib2.Http()
+    #response, content = http.request(url)
+
+    #movie_data = json.loads(content)
+    #if movie_data[0] == "Nothing found.":
+    #    return "Could not find movie"
+
+    #return str(movie_data)
+
+    #poster = None
+    #for img in in_dict.get("posters"):
+    #    if img.get("")
+
+    #return json.dumps(in_dict.get("posters")[0].get("image").get("url"))
+    #return in_dict.get("posters")
+
+
+    #return json.dumps(movies.get(movie_id).to_dict())
 
 @api.route("/api/latest_movies/")
 def latest_movies():
