@@ -20,6 +20,7 @@ from moviehub.core.models import Client
 # - if the code is invalid
 #       return error response
 
+
 @api.route("/api/auth/")
 def auth():
     if request.args.get("response_type") == "code":
