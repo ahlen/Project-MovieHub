@@ -37,7 +37,7 @@ oauth = OAuth2WebServerFlow(
     client_id=settings.GOOGLE_OAUTH2_ID,#"",#app.config.GOOGLE_OAUTH2_ID,
     client_secret=settings.GOOGLE_OAUTH2_SECRET,#"",#app.config.GOOGLE_OAUTH2_SECRET,
     scope = "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
-    redirect_uri="https://3.movie-hub.appspot.com/oauth2callback",
+    redirect_uri="https://movie-hub.appspot.com/oauth2callback",
 ) # TODO: change to scope: https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile
 
 @app.before_request

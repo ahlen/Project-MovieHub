@@ -30,12 +30,6 @@ class Client(db.Model):
     def _generate_secret(self):
         return None
 
-# TODO: add more details about the movie.
-#class Movie(db.Model):
-#    title = db.StringProperty(required=True)
-#    imdb_id = db.StringProperty(required=True)
-#...
-
 class TestArticle(db.Model):
     title = db.StringProperty(required=True)
     content = db.TextProperty()
@@ -50,6 +44,7 @@ class TestArticle(db.Model):
         )
 
 class Movie(db.Model):
+    # TODO: add model properties
     def __init__(self, id, title, imdb_id):
         self.id = id
         self.title = title
@@ -61,3 +56,9 @@ class Movie(db.Model):
             "title": self.title,
             "imdb_id": self.imdb_id,
         }
+
+#class Review(db.Model):
+#    author = db.ReferenceProperty(User)
+#    rating = db.RatingProperty()
+
+#class Discussion(db.Model):
