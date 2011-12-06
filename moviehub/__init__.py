@@ -145,4 +145,25 @@ def request_token():
 
     #return json.dumps(data)
 
+@app.route("/_data/add/")
+def add_sample_data():
+    from moviehub.core.models import Movie
+    from google.appengine.ext import db
 
+    movies = [
+        Movie(title="Tinker Tailor Soldier Spy", imdb_id="tt1340800"),
+        Movie(title="New Year's Eve", imdb_id="tt1598822"),
+        Movie(title="Young Adult", imdb_id="tt1625346"),
+        Movie(title="The Sitter", imdb_id="tt1366344"),
+        Movie(title="W.E.", imdb_id="tt1536048"),
+        Movie(title="I Melt with You", imdb_id="tt1691920"),
+        Movie(title="We Need to Talk About Kevin", imdb_id="tt1242460"),
+        Movie(title="The Matrix", imdb_id="tt0133093"),
+    ]
+    #db.put_async(movies)
+    for m in movies:
+        m.put()
+
+    return "Added demo data"
+    #for m in movies:
+    #    m.put()

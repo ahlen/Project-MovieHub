@@ -7,8 +7,8 @@ import json
 from moviehubapi import exceptions, security, models
 
 class Moviehub(object):
-    #API_URL = "http://localhost:8081/api"
-    API_URL = "https://movie-hub.appspot.com/api"
+    API_URL = "http://localhost:8081/api"
+    #API_URL = "https://movie-hub.appspot.com/api"
 
     """
     This represent the HTTP API from Moviehub

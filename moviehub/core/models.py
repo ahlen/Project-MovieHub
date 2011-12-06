@@ -44,18 +44,17 @@ class TestArticle(db.Model):
         )
 
 class Movie(db.Model):
-    # TODO: add model properties
-    def __init__(self, id, title, imdb_id):
-        self.id = id
-        self.title = title
-        self.imdb_id = imdb_id
+    title = db.StringProperty(required=True)
+    imdb_id = db.StringProperty()
 
     def to_dict(self):
         return {
-            "id": self.id,
+            "id": self.key().id(),
             "title": self.title,
             "imdb_id": self.imdb_id,
         }
+
+#class
 
 #class Review(db.Model):
 #    author = db.ReferenceProperty(User)
