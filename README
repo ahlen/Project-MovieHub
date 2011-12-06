@@ -1,1 +1,2 @@
-test
+dev_appserver.py . -p 8080
+dev_appserver.py . -p 8081
