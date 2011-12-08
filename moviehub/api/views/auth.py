@@ -20,21 +20,26 @@ from moviehub.core.models import Client
 # - if the code is invalid
 #       return error response
 
-
 @api.route("/api/auth/")
 def auth():
     if request.args.get("response_type") == "code":
         client_id = request.args.get("client_id", None)
         if not client_id:
             return get_error_response(
-                message="Missing required parameter: client_id"
+                message="Missing required parameter: client_id",
+                status_code=400 # bad request
             )
-        #client = Client.get_by_id(client_id)
+        client = Client.get_by_id(int(client_id))
+        if client and client.redirect_uri == request.args.get("redirect_uri", None):
+            return "The client and redirect_uri matched!"
+        #else:
+        #    return "Something else"
 
         return "Client id=%s" % (client_id)
     # try to return a token to the client, if the token request is valid
     elif request.args.get("response_type") == "token":
         return "No token implementation yet :)"
     return get_error_response(
-        message="Missing required parameter: response_type"
+        message="Missing required parameter: response_type",
+        type=400 # bad request
     )

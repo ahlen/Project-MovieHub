@@ -147,7 +147,7 @@ def request_token():
 
 @app.route("/_data/add/")
 def add_sample_data():
-    from moviehub.core.models import Movie
+    from moviehub.core.models import Movie, Client
     from google.appengine.ext import db
 
     movies = [
@@ -163,6 +163,8 @@ def add_sample_data():
     #db.put_async(movies)
     for m in movies:
         m.put()
+
+    #client = Client(redirect_uri="http://www.demo.se", name="Demo", secret="TEST", user=)
 
     return "Added demo data"
     #for m in movies:

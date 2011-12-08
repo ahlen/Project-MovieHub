@@ -5,5 +5,8 @@ class MoviehubApiError(Exception):
         Exception.__init__(self, message)
         self.type = type
 
-class NotValidTokenError(Exception):
-        pass
+#class MoviehubNotValidTokenError(MoviehubApiError):
+#    pass
+
+#class MoviehubResourceNotFoundError(MoviehubApiError):
+#    pass

@@ -22,6 +22,11 @@ def show_movie(movie_id):
     from moviehub.api import tmdb
 
     movie = Movie.get_by_id(movie_id)
+    if not movie:
+        return get_error_response(
+            message="Could not find resource",
+            status_code=404
+        )
     #movies.get(movie_id)
     tmdb_data = tmdb.extract_movie_data(movie.imdb_id)
 

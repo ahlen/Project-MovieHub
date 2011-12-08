@@ -26,9 +26,21 @@ class Client(db.Model):
     redirect_uri = db.StringProperty(required=True) #db.LinkProperty()
     created_at = db.DateTimeProperty(default=datetime.datetime.utcnow)
     user = db.ReferenceProperty(User, collection_name="clients")
+    trusted = db.BooleanProperty(default=False)
 
-    def _generate_secret(self):
-        return None
+    @classmethod
+    def authenticate(cls, id, secret):
+        client =  cls.get_by_id(id)
+        if client and client.secret == secret:
+            return client
+        else:
+            return None
+
+
+    def generate_secret(self):
+        import hashlib
+
+        self.secret = hashlib.new()
 
 class TestArticle(db.Model):
     title = db.StringProperty(required=True)

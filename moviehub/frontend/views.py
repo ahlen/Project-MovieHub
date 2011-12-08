@@ -7,7 +7,7 @@ from werkzeug.utils import redirect
 
 from wtforms import Form, TextField, validators
 
-from moviehubapi import Moviehub, models
+from moviehubapi import Moviehub, models, exceptions
 
 # wrapper around moviehub REST api.
 moviehub = Moviehub(client_id="demo", client_secret="demo")
@@ -22,7 +22,10 @@ def index():
 
 @frontend.route("/movies/<int:id>/")
 def show_movie(id):
-    movie = moviehub.movie(id)
+    try:
+        movie = moviehub.movie(id)
+    except exceptions.MoviehubApiError as ex:
+        return "%s: %s" % (ex.type, ex.message)
 
     return render_template("movies/show.html", movie=movie)
 
@@ -41,7 +44,7 @@ def add_article():
         )
         return redirect(url_for("frontend.show_article", id=article.id))
     articles=moviehub.articles()
-    
+
     return render_template("articles/new.html", form=form, articles=articles)
 
 @frontend.route("/articles/<int:id>/")

@@ -77,12 +77,18 @@ class Moviehub(object):
         Give information about a single movie by given identifier.
         """
         response, movie_data = self._request("/movies/%d/" % id)
+        if not response.status == 200: # handle this when we not get ok response
+            error_data = json.loads(movie_data).get("error")
+            raise exceptions.MoviehubApiError(
+                type=error_data.get("type"),
+                message=error_data.get("message")
+            )
+
         return models.Movie.from_dict(json.loads(movie_data))
         #http = httplib2.Http()
         #response, content = http.request("http://localhost:8081/api/movies/%d/" % id)
         #response, content = http.request("https://3.movie-hub.appspot.com/api/movies/%d/" % id)
         #return models.Movie.from_dict(json.loads(content))
-
 
     def recent_movies(self, limit=10):
         http = httplib2.Http()
