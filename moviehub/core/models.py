@@ -66,10 +66,25 @@ class Movie(db.Model):
             "imdb_id": self.imdb_id,
         }
 
-#class
+class Review(db.Model):
+    author = db.ReferenceProperty(User)
+    rating = db.RatingProperty()
+    movie = db.ReferenceProperty(Movie)
+    text = db.StringProperty()
+    title = db.StringProperty()
+    created_at = db.DateTimeProperty(auto_now_add=True)
+    updated_at = db.DateTimeProperty(auto_now=True)
 
-#class Review(db.Model):
-#    author = db.ReferenceProperty(User)
-#    rating = db.RatingProperty()
+    def to_dict(self):
+        return {
+            "id": self.key().id(),
+            "title": self.title,
+            "author": self.author,
+            "rating": self.rating,
+            "movie": self.movie,
+            "text": self.text,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+        }
 
 #class Discussion(db.Model):
