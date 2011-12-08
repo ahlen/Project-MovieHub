@@ -30,8 +30,10 @@ def auth():
                 status_code=400 # bad request
             )
         client = Client.get_by_id(int(client_id))
-        if client and client.redirect_uri == request.args.get("redirect_uri", None):
-            return "The client and redirect_uri matched!"
+        if client: #and client.redirect_uri == request.args.get("redirect_uri", None):
+            return "The client found"
+            # TODO: check if user is logged in or send redirect to Google OAuth 2.0 login
+            #
         #else:
         #    return "Something else"
 

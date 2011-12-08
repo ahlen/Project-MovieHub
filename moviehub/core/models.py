@@ -22,9 +22,9 @@ class User(db.Model):
 
 class Client(db.Model):
     name = db.StringProperty(required=True)
-    secret = db.StringProperty(required=True)
+    secret = db.StringProperty() #required=True
     redirect_uri = db.StringProperty(required=True) #db.LinkProperty()
-    created_at = db.DateTimeProperty(default=datetime.datetime.utcnow)
+    created_at = db.DateTimeProperty(auto_now_add=True)
     user = db.ReferenceProperty(User, collection_name="clients")
     trusted = db.BooleanProperty(default=False)
 
@@ -36,11 +36,12 @@ class Client(db.Model):
         else:
             return None
 
-
     def generate_secret(self):
         import hashlib
+        h = hashlib.new("sha1")
+        h.update("%s:%s:%s" % (self.redirect_uri, self.created_at.isoformat(), self.name))
 
-        self.secret = hashlib.new()
+        self.secret = h.hexdigest()
 
 class TestArticle(db.Model):
     title = db.StringProperty(required=True)
