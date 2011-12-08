@@ -37,6 +37,9 @@ class Client(db.Model):
             return None
 
     def generate_secret(self):
+        """
+        Generate secret for the client should use as the API identifier.
+        """
         import hashlib
         h = hashlib.new("sha1")
         h.update("%s:%s:%s" % (self.redirect_uri, self.created_at.isoformat(), self.name))
