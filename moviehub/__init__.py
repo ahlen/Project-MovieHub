@@ -150,6 +150,7 @@ def add_sample_data():
     from moviehub.core.models import Movie, Client
     from google.appengine.ext import db
 
+    """
     movies = [
         Movie(title="Tinker Tailor Soldier Spy", imdb_id="tt1340800"),
         Movie(title="New Year's Eve", imdb_id="tt1598822"),
@@ -163,8 +164,11 @@ def add_sample_data():
     #db.put_async(movies)
     for m in movies:
         m.put()
+    """
 
-    #client = Client(redirect_uri="http://www.demo.se", name="Demo", secret="TEST", user=)
+    #client = Client(redirect_uri="http://localhost:8080/login/", name="Moviehub")
+    #client.generate_secret()
+    #client.put()
 
     return "Added demo data"
     #for m in movies:
