@@ -72,6 +72,25 @@ class Moviehub(object):
         #return content
         return models.Article.from_dict(json.loads(content))
 
+    def reviews(self):
+        response, content = self._request("/reviews/", method="GET")
+        reviews_dict = json.loads(content)
+        reviews=[]
+        for review in reviews_dict:
+            reviews.append(models.Review.from_dict(review))
+        return reviews
+
+    def add_review(self, title, content):
+        review_data = {"title": title, "text": content}
+        response, content = self._request("/reviews/", method="POST", body=review_data)
+
+        return models.Review.from_dict(json.loads(content))
+
+    def review(self, id):
+        response, content = self._request("/reviews/%d/" % id, method="GET")
+        #return content
+        return models.Review.from_dict(json.loads(content))
+
     def movie(self, id):
         """
         Give information about a single movie by given identifier.
