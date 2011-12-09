@@ -9,26 +9,6 @@ from wtforms import Form, TextField, validators
 
 from moviehubapi import Moviehub, models, exceptions
 
-# wrapper around moviehub REST api.
-moviehub = Moviehub(client_id="demo", client_secret="demo")
-
-@frontend.route("/")
-def index():
-
-    from moviehub.core.models import Movie
-    movies = []#Movie.get_movies()
-
-    return render_template("base.html", movies=movies)
-
-@frontend.route("/movies/<int:id>/")
-def show_movie(id):
-    try:
-        movie = moviehub.movie(id)
-    except exceptions.MoviehubApiError as ex:
-        return "%s: %s" % (ex.type, ex.message)
-
-    return render_template("movies/show.html", movie=movie)
-
 class ArticleForm(Form):
     title = TextField("Title", validators=[validators.length(min=4, max=32)])
     content = TextField("Content", validators=[validators.length(min=4, max=4000)])

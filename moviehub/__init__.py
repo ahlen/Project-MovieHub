@@ -33,18 +33,12 @@ app.register_blueprint(frontend)
 
 # TODO: move client_id and client_secret to local settings
 # to hide from public repository
-oauth = OAuth2WebServerFlow(
-    client_id=settings.GOOGLE_OAUTH2_ID,#"",#app.config.GOOGLE_OAUTH2_ID,
-    client_secret=settings.GOOGLE_OAUTH2_SECRET,#"",#app.config.GOOGLE_OAUTH2_SECRET,
-    scope = "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
-    redirect_uri="https://movie-hub.appspot.com/oauth2callback",
-) # TODO: change to scope: https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile
 
-@app.before_request
-def set_user():
-    g.user = None
-    if "user_id" in session:
-        g.user = User.get_by_id(session["user_id"])
+#@app.before_request
+#def set_user():
+#    g.user = None
+#    if "user_id" in session:
+#        g.user = User.get_by_id(session["user_id"])
 """
 @app.route("/")
 def index():
@@ -60,12 +54,12 @@ def ping(number):
     return "You pinged: %d" % (number)
 """
 
-@app.route("/auth/login/")
-def login():
-    return "<a href=\"%s\">Login</a>" % (oauth.step1_get_authorize_url(redirect_uri="https://3.movie-hub.appspot.com/oauth2callback"))
+#@app.route("/auth/login/")
+#def login():
+#    return "<a href=\"%s\">Login</a>" % (api.google_oauth.step1_get_authorize_url(redirect_uri="https://3.movie-hub.appspot.com/oauth2callback"))
 
 # TODO: move this to core.
-@app.route("/oauth2callback")
+#@app.route("/oauth2callback")
 def request_token():
     #try: # try to redeem an access token
     if "code" in request.args:

@@ -3,6 +3,12 @@ from functools import wraps
 import json
 from flask import Blueprint, g, request
 from moviehub.core.models import Client
+from oauth2client.client import OAuth2WebServerFlow
+
+try:
+    from moviehub import local_settings as settings
+except:
+    from moviehub import settings
 
 class ApiBlueprint(Blueprint):
     def require_client(self, f):
@@ -29,6 +35,16 @@ class ApiBlueprint(Blueprint):
             from moviehub.settings import TMDB_API_KEY
 
         return TMDB_API_KEY
+
+    @property
+    def google_oauth(self):
+        oauth = OAuth2WebServerFlow(
+            client_id=settings.GOOGLE_OAUTH2_ID,#"",#app.config.GOOGLE_OAUTH2_ID,
+            client_secret=settings.GOOGLE_OAUTH2_SECRET,#"",#app.config.GOOGLE_OAUTH2_SECRET,
+            scope = "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
+            redirect_uri="https://movie-hub.appspot.com/oauth2callback",
+        )
+        return oauth
 
 api = ApiBlueprint("api", __name__)
 
