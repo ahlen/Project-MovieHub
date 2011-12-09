@@ -13,8 +13,6 @@ def add_review():
         title=request.form.get("title"),
         text=request.form.get("text"),
         rating=request.form.get("rating"),
-        movie=request.form.get("movie"),
-
     )
     review.put()
 
@@ -27,7 +25,7 @@ def add_review():
 def reviews():
     reviews = Review.all()
     reviews_data = []
-    for review in reviews():
+    for review in reviews:
         reviews_data.append(review.to_dict())
 
     return json.dumps(reviews_data)

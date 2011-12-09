@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="span16">
+        <h1>{{ review.title }}</h1>
+        <p>{{ review.created_at }}</p>
+    </div>
+</div>
+<div class="row">
+    <div class="span16">
+        {{ review.text }}
+    </div>
+</div>
+{% endblock %}

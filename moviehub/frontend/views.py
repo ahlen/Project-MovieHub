@@ -52,3 +52,28 @@ def show_article(id):
     article = moviehub.article(id)
 
     return render_template("articles/show.html", article=article)
+
+class ReviewForm(Form):
+    title = TextField("Title", validators=[validators.length(min=1, max=32)])
+    content = TextField("Content", validators=[validators.length(min=4, max=4000)])
+
+@frontend.route("/reviews/new/", methods=["GET", "POST"])
+def add_review():
+    form = ReviewForm(request.form)
+
+    if request.method == "POST" and form.validate():
+        review = moviehub.add_review(
+            title=form.title.data,
+            content=form.content.data
+        )
+        return redirect(url_for("frontend.show_review", id=review.id))
+    reviews=moviehub.reviews()
+
+    return render_template("reviews/new.html", form=form, reviews=reviews)
+
+@frontend.route("/reviews/<int:id>/")
+def show_review(id):
+    review = moviehub.review(id)
+
+    return render_template("reviews/show.html", review=review)
+

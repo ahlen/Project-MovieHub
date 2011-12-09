@@ -74,7 +74,7 @@ class Review(db.Model):
     author = db.ReferenceProperty(User, collection_name="reviews")
     rating = db.RatingProperty()
     movie = db.ReferenceProperty(Movie, collection_name="reviews")
-    text = db.StringProperty()
+    text = db.TextProperty()
     title = db.StringProperty()
     created_at = db.DateTimeProperty(auto_now_add=True)
     updated_at = db.DateTimeProperty(auto_now=True)
