@@ -162,18 +162,32 @@ def add_sample_data():
     """
 
     #client = Client(redirect_uri="http://www.demo.se", name="Demo", secret="TEST", user=)
-    review = [
-        Review(title="Oldboy", text="Korean film, very good!", rating=9),
-        Review(title="Kiss Kiss Bang Bang", text="Action/Comedy with Downey Jr", rating=8),
-    ]
+    #review = [
+    #    Review(title="Oldboy", text="Korean film, very good!", rating=9),
+    #    Review(title="Kiss Kiss Bang Bang", text="Action/Comedy with Downey Jr", rating=8),
+    #]
 
-    for m in review:
-        m.put()
+    #for m in review:
+    #    m.put()
+
+
+    u = User(email="mikael.ahlen@gmail.com",
+        full_name="Mikael Ahlen",
+        photo_url="https://lh4.googleusercontent.com/-kPBDOS79uEk/AAAAAAAAAAI/AAAAAAAAAC4/N23-_zPoMMg/photo.jpg",
+        google_id="111331274520904684671",
+        access_token="ya29.AHES6ZStvSU0dsoexKVyMGVvTcWiB6O1cPhpU4gBqWk5t2F2o1Xr",
+        refresh_token="1/E2w6hL8_GPKaMJ6A3Mem7dyK1Sfco2YrL3sKuBcInFk",
+    )
+
+    u.put()
+
+    return "User: " + str(u.key().id())
+
 
     #client = Client(redirect_uri="http://localhost:8080/login/", name="Moviehub")
     #client.generate_secret()
     #client.put()
 
-    return "Added demo data"
+    #return "Added demo data"
     #for m in movies:
     #    m.put()

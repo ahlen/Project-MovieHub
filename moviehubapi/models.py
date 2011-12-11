@@ -2,6 +2,20 @@
 
 import datetime
 
+class User(object):
+    def __init__(self, id, full_name, photo_url):
+        self.id = id
+        self.full_name = full_name
+        self.photo_url = photo_url
+
+    @classmethod
+    def from_dict(cls, data):
+        return User(
+            id=data.get("id"),
+            full_name=data.get("full_name"),
+            photo_url=data.get("photo_url")
+        )
+
 class Movie(object):
     def __init__(self, id, title, imdb_id, image_url=None, description=None):
         self.id = id
@@ -58,4 +72,22 @@ class Review(object):
             data.get("text"),
             data.get("created_at"),
             data.get("updated_at")
+        )
+
+class Recommendation(object):
+    def __init__(self, id, author, rating, movies, body):
+        self.id = id
+        self.author = author
+        self.rating = rating
+        self.movies = movies
+        self.body = body
+
+    @classmethod
+    def from_dict(cls, data):
+        return Recommendation(
+            id=data.get("id"),
+            author=User.from_dict(data.get("author")),
+            rating=int(data.get("rating")),
+            movies=[Movie.from_dict(movie) for movie in data.get("movies")],
+            body=data.get("body")
         )

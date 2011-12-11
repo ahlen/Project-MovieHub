@@ -20,6 +20,13 @@ class User(db.Model):
     # in the system for eventually administration ui
     # roles = db.StringListProperty(choices=set("superuser", "user"))
 
+    def to_dict(self):
+        return dict(
+            id=self.key().id(),
+            full_name=self.full_name,
+            photo_url=self.photo_url,
+        )
+
 class Client(db.Model):
     name = db.StringProperty(required=True)
     secret = db.StringProperty() #required=True
@@ -63,12 +70,21 @@ class Movie(db.Model):
     title = db.StringProperty(required=True)
     imdb_id = db.StringProperty()
 
-    def to_dict(self):
-        return {
-            "id": self.key().id(),
-            "title": self.title,
-            "imdb_id": self.imdb_id,
-        }
+    def to_dict(self, include_remote=False):
+        movie = dict(
+            id=self.key().id(),
+            title=self.title,
+            imdb_id=self.imdb_id
+        )
+        if include_remote:
+            from moviehub.api import tmdb
+            tmdb_data = tmdb.extract_movie_data(self.imdb_id)
+
+            movie.update(
+                image_url=tmdb_data.get("image_url", ""),
+                description=tmdb_data.get("description", "")
+            )
+        return movie
 
 class Review(db.Model):
     author = db.ReferenceProperty(User, collection_name="reviews")
@@ -91,4 +107,120 @@ class Review(db.Model):
             "updated_at": self.updated_at.isoformat(),
         }
 
-#class Discussion(db.Model):
+
+"""
+class Recommendation(db.Model):
+    author = db.ReferenceProperty(User, collection_name="recommendations")#, required=True)
+    source = db.ReferenceProperty(Movie, collection_name="source_recommendations", required=True)
+    target = db.ReferenceProperty(Movie, collection_name="target_recommendations", required=True)
+    rating = db.RatingProperty(required=True)
+    body = db.TextProperty(required=True)
+    selected_review = db.ReferenceProperty() # should always be of type RecommendationReview
+
+    @classmethod
+    def check_uniqueness(cls, source, target):
+        uniq_left = Recommendation.all().filter("source = ", source) \
+            .filter("target = ", target).get()
+        uniq_right = Recommendation.all().filter("source = ", target) \
+            .filter("target = ", source).get()
+
+        return not uniq_left and not uniq_right
+
+    def to_dict(self):
+        return dict(
+            id=self.parent_key().id(),
+            author=self.author.to_dict(),
+            source=self.source.to_dict(include_remote=True),
+            target=self.target.to_dict(include_remote=True),
+            rating=self.rating,
+            body=self.body
+        )
+
+class RecommendationPair(db.Model):
+    movies = db.ListProperty(item_type=db.Key)
+
+class RecommendationReview(db.Model):
+    recommendation = db.ReferenceProperty(Recommendation)
+    author = db.ReferenceProperty(User, collection_name="recommendation_reviews")
+    rating = db.RatingProperty(required=True)
+    body = db.TextProperty(required=True)
+"""
+"""
+Rewrite to this model:
+
+Recommendation have
+    author
+    source
+    target
+    rating
+    body
+    selected_review
+    created_at
+
+RecommendationReview have
+    recommendation (reference)
+    author
+    rating (author chosen)
+    score (users up/down vote)
+    body
+    created_at
+
+RecommendationIndex have (two-way) and belongs to parent
+    source
+    target
+    rating
+
+    (so we can do filter(source=this).order(rating))
+"""
+
+class Recommendation(db.Model):
+    author = db.ReferenceProperty(User, collection_name="recommendations")
+    movies = db.ListProperty(db.Key)
+    left = db.ReferenceProperty(Movie, collection_name="_left_recommendations")
+    right = db.ReferenceProperty(Movie, collection_name="_right_recommendations")
+    #source = db.ReferenceProperty(Movie, collection_name="source_recommendations")
+    #target = db.ReferenceProperty(Movie, collection_name="target_recommendations")
+    rating = db.RatingProperty()
+    body = db.TextProperty()
+    selected_review = db.ReferenceProperty() # should always be RecommendationReview
+    created_at = db.DateTimeProperty(auto_now_add=True)
+    updated_at = db.DateTimeProperty(auto_now=True)
+
+    def to_dict(self, *args, **kwargs):
+        recommendation = dict(
+            id=self.key().id(),
+            author=self.author.to_dict(),
+            movies=[movie.to_dict(include_remote=True) for movie in Movie.get(self.movies)],
+            rating=self.rating,
+            body=self.body,
+            created_at=self.created_at.isoformat(),
+            updated_at=self.updated_at.isoformat()
+        )
+
+        return recommendation
+
+class RecommendationReview(db.Model):
+    recommendation = db.ReferenceProperty(Recommendation, required=True)
+    author = db.ReferenceProperty(User, collection_name="recommendation_reviews", required=True)
+    rating = db.RatingProperty(required=True)
+    score = db.FloatProperty()
+    body = db.TextProperty(required=True)
+    created_at = db.DateTimeProperty(auto_now_add=True)
+    updated_at = db.DateTimeProperty(auto_now=True)
+
+    def to_dict(self, include_recommendation=False):
+        review = dict(
+            id=self.key().id(),
+            author=self.author.to_dict(),
+            rating=self.rating,
+            body=self.body,
+            score=self.score,
+            created_at=self.created_at.isoformat(),
+            updated_at=self.updated_at.isoformat(),
+        )
+        if include_recommendation:
+            review.update(
+                recommendation=self.recommendation.to_dict()
+            )
+
+        return review

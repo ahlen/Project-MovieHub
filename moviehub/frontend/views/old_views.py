@@ -2,7 +2,7 @@
 from flask import render_template, request
 from flask.helpers import url_for
 
-from moviehub.frontend import frontend
+from moviehub.frontend import frontend, moviehub
 from werkzeug.utils import redirect
 
 from wtforms import Form, TextField, validators

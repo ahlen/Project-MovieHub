@@ -115,6 +115,17 @@ class Moviehub(object):
         response, content = http.request("https://3.movie-hub.appspot.com/api/latest_movies/")
         return content
 
+    def recommendations(self, movie_id):
+        response, content = self._request("/movies/%d/recommendations/" % movie_id)
+        rec_data = json.loads(content)
+        if not response.status == 200:
+            error_data = rec_data.get("error")
+            raise exceptions.MoviehubApiError(
+                type=error_data.get("type"),
+                message=error_data.get("message")
+            )
+        return [models.Recommendation.from_dict(r) for r in rec_data]
+
     def _client_request(self, endpoint, method="GET", body=None, headers=None):
         """
         Helper method for calling API endpoints which require client access

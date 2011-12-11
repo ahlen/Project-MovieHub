@@ -2,7 +2,7 @@
 from functools import wraps
 import json
 from flask import Blueprint, g, request
-from moviehub.core.models import Client
+from moviehub.core.models import Client, User
 from oauth2client.client import OAuth2WebServerFlow
 
 try:
@@ -60,9 +60,12 @@ def set_client_and_user_access():
     """
     # for now, simulate api check for client
     g.api_client = None
+    g.api_user = None
     if "client_id" in request.args and "client_token" in request.args and \
        request.args["client_id"] == "demo" and request.args["client_token"] == "demo":
         g.api_client = 1
+
+    g.api_user = User.all().get()
         #g.api_client = Client()
 
     #if not "token" in request.args and request.args["token"] == "abc":

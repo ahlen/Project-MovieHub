@@ -1,8 +1,8 @@
 @import "bootstrap.css";
 
 body {
-    background: #fcfaf8;
-    font-family: "Droid Sans", sans-serif;
+    background: rgb(252, 252, 252);
+    font-family: "Helvetica Neue", "Droid Sans", sans-serif;
 }
 
 .container {
@@ -63,8 +63,18 @@ body {
     border-radius: 3px;
 }
 
+.row h1, .row h2, .row h3 {
+    line-height: normal;
+    font-family: "Droid Sans", "Helvetica Neue", sans-serif;
+}
+
 /* form */
 .error ul {
     margin-top: 5px;
     margin-bottom: 0;
+}
+
+/* create new recommendation */
+.new_recommendation {
+
 }

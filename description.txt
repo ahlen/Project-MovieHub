@@ -1,0 +1,24 @@
+Moviehub
+--------
+
+Recommend movies you have seen and rank them in relation to other
+movies to help people that not have seen the movies you have seen to
+seen these movies!
+
+Main flow
+---------
+
+The user Bob have just seen the movie "Horrible Bosses" and earlier he
+had watched the movie "Dinner for Schmucks" and wants to recommend "Horrible Bosses"
+for those who have seen the "Dinner for Schmucks" or vice versa.
+
+Bob creates a relationship/recommendation between these movies and write a short review (with score) why
+he thinks that people that have seen one of the movies should watch the other.
+
+Other users can now up- or downvote Bobs review which modify Bobs trust score which is
+used when he up- or downvotes others relationship reviews. This means that users who have
+a higher trust score have larger impact when they vote on relationships.
+
+Because other users also may write their own reviews for the same relationship the review
+with the best score (based on votes + trust score of each voter) is the relationship 
+and comment that're used for the relationship/recommendation.

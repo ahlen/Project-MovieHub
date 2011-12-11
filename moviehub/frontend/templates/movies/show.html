@@ -1,8 +1,100 @@
 {% extends "base.html" %}
 
+{% macro display_target_movie(recommendation, source_movie) %}
+    {% if recommendation.movies[0].id == source_movie.id %}
+        {% set source, target = recommendation.movies[0], recommendation.movies[1] %}
+    {% else %}
+        {% set source, target = recommendation.movies[1], recommendation.movies[0] %}
+    {% endif %}
+
+    <div style="border-bottom: solid 1px #e4e4e4; padding: 5px 0 5px 0;">
+        <div class="row">
+            <div class="span2">
+                {% if target.image_url %}
+                <img src="{{ target.image_url }}" style="width: 100px; display: block;">
+                {% else %}
+                <div style="width: 100px; background: #e4e4e4;">
+                    <div style=" border: 1px solid #ccc; height: 156px;">
+
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="span11">
+                <h3>{{ target.title }}</h3>
+                <p>
+                    {{ target.description }}
+                </p>
+                <blockquote>
+                    <p>
+                        {{ recommendation.body }}
+                    </p>
+                    <small>{{ recommendation.author.full_name }}</small>
+                </blockquote>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
 {% block content %}
     <div class="row">
-        <div class="span16">
+        <div class="span3">
+            {% if movie.image_url %}
+                <img src="{{ movie.image_url }}" alt="" style="width: 160px">
+            {% endif %}
+        </div>
+
+        <div class="span13">
+            <div class="span13">
+                <h1 style="margin-bottom: 5px;">{{ movie.title }}</h1>
+
+                <p>
+                    {{ movie.description }}
+                </p>
+            </div>
+            <div class="span13">
+                <form action="/movies/{{ movie.id }}/recommendations/" method="post" class="form-stacked">
+                    <fieldset>
+                        <legend>Add recommendation</legend>
+                        <div class="clearfix">
+                            <div>
+                                <input type="text" id="target_movie" name="target_movie" class="xxlarge"
+                                       placeholder="Chose movie (by imdb id or id) (should add possibility to search via text later)">
+                            </div>
+                        </div>
+                        <div class="clearfix">
+                            <div class="input">
+                                <textarea rows="6" id="motivation" name="motivation" class="xxlarge"
+                                          placeholder="Motivation why you suggest the recommendation"></textarea>
+                            </div>
+                        </div>
+                        <div class="clearfix">
+                            <div>
+                                <input type="range" id="rating" name="rating" class="xxlarge"
+                                       placeholder="Add new rating">
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn primary" value="save" type="submit">Add</button>
+                            <button class="btn" type="reset">Cancel</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+
+            <div class="span13">
+
+                {% for recommendation in recommendations %}
+                    {{ display_target_movie(recommendation, movie) }}
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+<!--
+<div class="span16">
             <h1>{{ movie.title }}</h1>
             <p>
                 IMDB Id: {{ movie.imdb_id }}
@@ -10,6 +102,5 @@
             {% if movie.image_url %}
             <img src="{{ movie.image_url }}" alt="">
             {% endif %}
-        </div>
-    </div>
-{% endblock %}
+</div>
+-->

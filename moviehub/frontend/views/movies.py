@@ -13,7 +13,8 @@ from moviehubapi import Moviehub, models, exceptions
 def show_movie(id):
     try:
         movie = moviehub.movie(id)
+        recommendations = moviehub.recommendations(id)
     except exceptions.MoviehubApiError as ex:
         return "%s: %s" % (ex.type, ex.message)
 
-    return render_template("movies/show.html", movie=movie)
+    return render_template("movies/show.html", movie=movie, recommendations=recommendations)
