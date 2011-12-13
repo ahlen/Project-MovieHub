@@ -15,53 +15,153 @@ POST /api/movies/{id}/recommendations/
 GET /api/recommendations/{id}/
 """
 
-@api.route("/api/movies/<int:movie_id>/recommendations/", methods=["POST"])
-def add_recommendation(movie_id):
-    target_movie_id = request.args.get("target_id", None)
-    if not target_movie_id:
+@api.route("/api/reviews/", methods=["POST"])
+def add_recommendation_review():
+    """
+    add new recommendation review to two movies
+    and if the relationship doesn't exists we create it too.
+
+    post data
+    =========
+    :param  movie_ids       require a comma-separated list of two movie ids
+                            example: movie_ids=1,2
+
+    :param  body            require a string with length between 4 and 1024
+
+    :param  rating          require a integer between 0 to 100
+
+    """
+    movies = request.form.get("movie_ids", None)
+    if not movies:
         return get_error_response(
-            message="Missing required parameter: target_id",
-            status_code=400 # bad request
-        )
-    if movie_id == int(target_movie_id):
-        return get_error_response(
-            message="Target and source cannot have the same id",
+            message="Missing required parameter movie_ids",
             status_code=400
         )
 
-    # check if movies exists
-    source = Movie.get_by_id(movie_id)
-    target = Movie.get_by_id(int(target_movie_id))
+    # we may improve the DRY later
+    body, rating = request.form.get("body", None), request.form.get("rating", None)
 
-    if not source or not target:
+    if not body:
         return get_error_response(
-            message="Could not find one of the resources",
+            message="Missing required parameter body",
+            status_code=400
+        )
+    if not rating:
+        return get_error_response(
+            message="Missing required parameter rating",
+            status_code=400
+        )
+
+    if not (4 <= len(body) <= 1024):
+        return get_error_response(
+            message="Body can only be between 4 and 1024 characters",
+            status_code=400
+        )
+
+    try:
+        rating = int(rating)
+
+        if not 0 <= rating <= 100:
+            raise ValueError() # just for DRY because exceptions are free...right.
+    except:
+        return get_error_response(
+            message="Rating must be an integer between 0 and 100",
+            status_code=400
+        )
+
+    try:
+        # get only two items from the list because the user may put
+        # more movies on it but we only support two, at least at the moment.
+        # because we may want to support users to create recommendations for all
+        # permutations in the feature...
+        movies = [int(mid) for mid in movies.split(",")[0:2]]
+        if not len(movies) == 2:
+            return get_error_response(
+                message="Input of movie_ids required two id numbers",
+                status_code=400
+            )
+
+        if movies[0] == movies[1]:
+            return get_error_response(
+                message="movie_ids cannot be the same",
+                status_code=400
+            )
+
+        movie_left, movie_right = Movie.get_by_id(movies)
+
+        if not movie_left or not movie_right:
+            return get_error_response(
+                message="Could not find one of the resources",
+                status_code=400
+            )
+
+        movie_keys = [movie_left.key(), movie_right.key()]
+        movie_keys.sort()
+
+        rec = Recommendation.all().filter("left = ", movie_keys[0]) \
+            .filter("right = ", movie_keys[1]).get()
+
+        # if recommendation doesn't already exists
+        if not rec:
+            r = Recommendation(
+                rating=rating,
+                author=g.api_user,
+                body=body,
+                movies=movie_keys,
+                left=movie_keys[0],
+                right=movie_keys[1]
+            )
+            r.put()
+
+            review = RecommendationReview(
+                recommendation=r,
+                author=r.author,
+                rating=rating,
+                score=0.0, #empty score because the post is new
+                body=body
+            )
+            review.put()
+
+            return json.dumps(review.to_dict())
+
+        if RecommendationReview.gql("WHERE author = :1 AND recommendation = :2", g.api_user, rec).get():
+            return get_error_response(
+                message="Each author can only write one review per recommendation",
+                status_code=400
+            )
+
+        # otherwise we create a new review with the recommendation as "parent"
+        review = RecommendationReview(
+            recommendation=rec,
+            rating=rating,
+            author=g.api_user,
+            score=0.0,
+            body=body
+        )
+        review.put()
+
+        return json.dumps(review.to_dict())
+
+    except ValueError:
+        return get_error_response(
+            message="Input of movie_ids is not valid (can only be a list of two ids like 1,2)",
+            status_code=400
+        )
+
+@api.route("/api/reviews/<int:id>/", methods=["PUT"])
+def edit_recommendation_review(id):
+    review = RecommendationReview.get_by_id(id)
+    if not review:
+        return get_error_response(
+            message="Resource not found",
             status_code=404
         )
-
-    # check if recommendation already exists
-    movies = [source.key(), target.key()]
-    movies.sort()
-    rec = Recommendation.all().filter("left = ", movies[0]).filter("right = ", movies[1]).get()
-
-    if not rec:
-        rec = Recommendation(
-            rating=50,
-            author=g.api_user,
-            body="Hello World",
-            movies=[source.key(), target.key()],
-            left=movies[0],
-            right=movies[1]
+    if not review.author == g.api_user:
+        return get_error_response(
+            message="No permission",
+            status_code=401 # authorization
         )
-        rec.put()
-
-        return json.dumps(rec.to_dict())
-
-    # otherwise the recommendation already exists
-    return get_error_response(
-        message="Recommendation already exists with %s (%d) and %s (%d)" % (source.title, source.key().id(), target.title, target.key().id()),
-        status_code=400,
-    )
+    return "TODO: implement logic to edit"
 
 @api.route("/api/movies/<int:movie_id>/recommendations/")
 def get_recommendations(movie_id):

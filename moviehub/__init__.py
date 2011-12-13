@@ -145,7 +145,7 @@ def add_sample_data():
     from moviehub.core.models import Review
     from google.appengine.ext import db
 
-    """
+
     movies = [
         Movie(title="Tinker Tailor Soldier Spy", imdb_id="tt1340800"),
         Movie(title="New Year's Eve", imdb_id="tt1598822"),
@@ -159,17 +159,6 @@ def add_sample_data():
     #db.put_async(movies)
     for m in movies:
         m.put()
-    """
-
-    #client = Client(redirect_uri="http://www.demo.se", name="Demo", secret="TEST", user=)
-    #review = [
-    #    Review(title="Oldboy", text="Korean film, very good!", rating=9),
-    #    Review(title="Kiss Kiss Bang Bang", text="Action/Comedy with Downey Jr", rating=8),
-    #]
-
-    #for m in review:
-    #    m.put()
-
 
     u = User(email="mikael.ahlen@gmail.com",
         full_name="Mikael Ahlen",
@@ -180,6 +169,9 @@ def add_sample_data():
     )
 
     u.put()
+
+    client = Client(redirect_uri="http://www.demo.se", name="Demo", secret="TEST", user=u)
+    client.put()
 
     return "User: " + str(u.key().id())
 

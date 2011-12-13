@@ -23,6 +23,20 @@
             <div class="span11">
                 <h3>{{ target.title }}</h3>
                 <p>
+                    <a href="#">{{ recommendation.author.full_name }}</a> and 35 other gave a match of {{ recommendation.rating }}% to suggest that you also should see <a href="#">{{ target.title }}</a> if you liked {{ source.title }} because:
+                </p>
+                <blockquote>
+                    <p>
+                        {{ recommendation.body }}
+                    </p>
+                </blockquote>
+
+                <div>
+                    <a href="#">Read about {{ target.title }}</a>
+                </div>
+
+                <!--<h3>{{ target.title }}</h3>
+                <p>
                     {{ target.description }}
                 </p>
                 <blockquote>
@@ -30,7 +44,7 @@
                         {{ recommendation.body }}
                     </p>
                     <small>{{ recommendation.author.full_name }}</small>
-                </blockquote>
+                </blockquote>-->
             </div>
         </div>
     </div>
@@ -40,7 +54,12 @@
     <div class="row">
         <div class="span3">
             {% if movie.image_url %}
-                <img src="{{ movie.image_url }}" alt="" style="width: 160px">
+                <img src="{{ movie.image_url }}" alt="" style="width: 160px; display: block;">
+            {% else %}
+                <div style="width: 160px; background: #e4e4e4;">
+                    <div style=" border: 1px solid #ccc; height: 256px;">
+                    </div>
+                </div>
             {% endif %}
         </div>
 
@@ -69,7 +88,9 @@
                             </div>
                         </div>
                         <div class="clearfix">
-                            <div>
+                            <label for="rating">Match %</label>
+                            
+                            <div class="input">
                                 <input type="range" id="rating" name="rating" class="xxlarge"
                                        placeholder="Add new rating">
                             </div>

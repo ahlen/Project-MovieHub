@@ -16,6 +16,73 @@ GET /api/recommendations/{id}/
 """
 
 @api.route("/api/movies/<int:movie_id>/recommendations/", methods=["POST"])
+def _old_add_recommendation(movie_id):
+    target_movie_id = request.args.get("target_id", None)
+    if not target_movie_id:
+        return get_error_response(
+            message="Missing required parameter: target_id",
+            status_code=400 # bad request
+        )
+    if movie_id == int(target_movie_id):
+        return get_error_response(
+            message="Target and source cannot have the same id",
+            status_code=400
+        )
+
+    # check if movies exists
+    source = Movie.get_by_id(movie_id)
+    target = Movie.get_by_id(int(target_movie_id))
+
+    if not source or not target:
+        return get_error_response(
+            message="Could not find one of the resources",
+            status_code=404
+        )
+
+    # check if recommendation already exists
+    movies = [source.key(), target.key()]
+    movies.sort()
+    rec = Recommendation.all().filter("left = ", movies[0]).filter("right = ", movies[1]).get()
+
+    if not rec:
+        def add_recommendation_with_review():
+            """
+            When new  recommendation is created and doesn't
+            already exists
+            """
+
+            rec = Recommendation(
+                rating=50,
+                author=g.api_user,
+                body="Hello World",
+                movies=[source.key(), target.key()],
+                left=movies[0],
+                right=movies[1]
+            )
+            rec.put()
+
+            review = RecommendationReview(
+                recommendation=rec,
+                author=rec.author,
+                rating=rec.rating,
+                score=0, #empty score because the post is new
+                body=rec.body
+            )
+            review.put()
+
+            return review
+
+        review = db.run_in_transaction(add_recommendation_with_review())
+        return json.dumps(review.to_dict(include_recommendation=True))
+        #return json.dumps(rec.to_dict())
+
+    # otherwise the recommendation already exists
+    return get_error_response(
+        message="Recommendation already exists with %s (%d) and %s (%d)" % (source.title, source.key().id(), target.title, target.key().id()),
+        status_code=400,
+    )
+
+@api.route("/api/movies/<int:movie_id>/recommendations/", methods=["POST"])
 def add_recommendation(movie_id):
     target_movie_id = request.args.get("target_id", None)
     if not target_movie_id:

@@ -70,13 +70,19 @@ class Movie(db.Model):
     title = db.StringProperty(required=True)
     imdb_id = db.StringProperty()
 
-    def to_dict(self, include_remote=False):
+    def to_dict(self, *args, **kwargs):
+        # if we only wants the id, just return the dict(id=...)
+        if kwargs.get("only_id", False):
+            return dict(
+                id=self.key().id()
+            )
+
         movie = dict(
             id=self.key().id(),
             title=self.title,
             imdb_id=self.imdb_id
         )
-        if include_remote:
+        if kwargs.get("include_remote", False):
             from moviehub.api import tmdb
             tmdb_data = tmdb.extract_movie_data(self.imdb_id)
 
@@ -186,16 +192,32 @@ class Recommendation(db.Model):
     created_at = db.DateTimeProperty(auto_now_add=True)
     updated_at = db.DateTimeProperty(auto_now=True)
 
+    def top_reviews(self, *args, **kwargs):
+        limit = max(min(kwargs.get("limit", 10), 10), 1)
+
+        return RecommendationReview.all().filter("recommendation=", self.key()).order("score").fetch(limit=limit)
+
     def to_dict(self, *args, **kwargs):
-        recommendation = dict(
-            id=self.key().id(),
-            author=self.author.to_dict(),
-            movies=[movie.to_dict(include_remote=True) for movie in Movie.get(self.movies)],
-            rating=self.rating,
-            body=self.body,
-            created_at=self.created_at.isoformat(),
-            updated_at=self.updated_at.isoformat()
-        )
+        if kwargs.get("only_id", False):
+            recommendation = dict(
+                id=self.key().id()
+            )
+        else:
+            recommendation = dict(
+                id=self.key().id(),
+                author=self.author.to_dict(),
+                movies=[movie.to_dict(include_remote=True) for movie in Movie.get(self.movies)],
+                rating=self.rating,
+                body=self.body,
+                created_at=self.created_at.isoformat(),
+                updated_at=self.updated_at.isoformat()
+            )
+
+        if kwargs.get("include_top_reviews", False):
+            reviews_count = max(min(kwargs.get("reviews_count", 10), 1))
+            recommendation.update(
+                reviews=self.top_reviews(limit=reviews_count)
+            )
 
         return recommendation
 
@@ -203,12 +225,12 @@ class RecommendationReview(db.Model):
     recommendation = db.ReferenceProperty(Recommendation, required=True)
     author = db.ReferenceProperty(User, collection_name="recommendation_reviews", required=True)
     rating = db.RatingProperty(required=True)
-    score = db.FloatProperty()
+    score = db.FloatProperty(default=0.0)
     body = db.TextProperty(required=True)
     created_at = db.DateTimeProperty(auto_now_add=True)
     updated_at = db.DateTimeProperty(auto_now=True)
 
-    def to_dict(self, include_recommendation=False):
+    def to_dict(self, *args, **kwargs):
         review = dict(
             id=self.key().id(),
             author=self.author.to_dict(),
@@ -218,9 +240,13 @@ class RecommendationReview(db.Model):
             created_at=self.created_at.isoformat(),
             updated_at=self.updated_at.isoformat(),
         )
-        if include_recommendation:
+        if kwargs.get("include_recommendation", False):
             review.update(
                 recommendation=self.recommendation.to_dict()
+            )
+        else:
+            review.update(
+                recommendation=self.recommendation.to_dict(only_id=True)
             )
 
         return review

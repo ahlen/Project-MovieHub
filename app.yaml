@@ -12,6 +12,9 @@ handlers:
 - url: /stylesheets
   static_dir: moviehub/frontend/static/stylesheets
 
+- url: /javascripts
+  static_dir: moviehub/frontend/static/javascripts
+
 - url: /.*
   script: moviehub.app
 

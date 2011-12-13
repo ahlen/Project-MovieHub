@@ -5,6 +5,11 @@
 
     <link rel="stylesheet" href="/stylesheets/moviehub.css" type="text/css">
     <link href="http://fonts.googleapis.com/css?family=Droid+Sans:400,700|Luckiest+Guy" rel="stylesheet" type="text/css">
+
+    <script type="text/javascript" src="/js/jquery-1.7.1.min.js"></script>
+
+    {% block head %}
+    {% endblock %}
 </head>
 <body>
     <div class="container">
@@ -19,8 +24,8 @@
             
             <ul>
                 <li style="float: right;"><a style="padding-right: 0;" href="/login/">Login</a> </li>
-                <li><a href="/movies/">Movies</a></li>
-                <li><a href="/browse/">Browse</a></li>
+                <li><a href="/movies/">Browse</a></li>
+                <li><a href="/browse/">Suggestions</a></li>
                 <li><a href="/me/">Profile</a></li>
             </ul>
         </div>
@@ -46,5 +51,7 @@
             </div>
         </div>
     </div>
+    {% block ending %}
+    {% endblock %}
 </body>
 </html>
