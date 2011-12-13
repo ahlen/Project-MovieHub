@@ -15,6 +15,7 @@ class User(db.Model):
     photo_url = db.LinkProperty()
     created_at = db.DateTimeProperty(auto_now_add=True)
     updated_at = db.DateTimeProperty(auto_now=True)
+    trust_score = db.FloatProperty(default=1.0)
 
     # we may implement roles so we can have users that are super users
     # in the system for eventually administration ui
@@ -250,3 +251,54 @@ class RecommendationReview(db.Model):
             )
 
         return review
+
+class ReviewVote(db.Model):
+    """
+    review vote is used to up- or downvote a recommendation review
+
+    when used set parent to the RecommendationReview instance
+    """
+
+    UPVOTE=1
+    DOWNVOTE=-1
+
+    author = db.ReferenceProperty(User, collection_name="votes")
+    vote = db.FloatProperty(default=0.0)
+
+    @classmethod
+    def make_vote(cls, vote, user, parent):
+
+        def vote_in_tx():
+            v = ReviewVote.gql("WHERE ancestor is :1 and author = :2", parent, user).get()
+            if not v:
+                v = ReviewVote(author=user, parent=parent)
+            else:
+                if not ((vote == cls.DOWNVOTE and v.vote <= -1) or (vote == cls.UPVOTE and vote.v >= 1)):
+                    parent.score += -(v.vote) # undo earlier score
+
+            if vote == -1:
+                v.vote = cls.DOWNVOTE * user.trust_score
+            elif vote == 1:
+                v.vote = cls.UPVOTE * user.trust_score
+            else:
+                return
+
+            parent.score += v.vote
+            db.put([parent, v]) # save both parent and review
+
+            return v
+        vote = db.run_in_transaction(vote_in_tx)
+
+        return vote
+
+    def to_dict(self, *args, **kwargs):
+        if self.vote >= 1:
+            vote_type = "upvote"
+        else:
+            vote_type = "downvote"
+
+        return dict(
+            recommendation_review=self.parent().to_dict(),
+            author=self.author.to_dict(),
+            vote=vote_type
+        )

@@ -12,5 +12,16 @@ indexes:
 
 - kind: Recommendation
   properties:
+  - name: movies
+  - name: rating
+
+- kind: Recommendation
+  properties:
+  - name: movies
+  - name: rating
+    direction: desc
+
+- kind: Recommendation
+  properties:
   - name: source
   - name: rating

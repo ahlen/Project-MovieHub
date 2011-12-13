@@ -126,6 +126,13 @@ class Moviehub(object):
             )
         return [models.Recommendation.from_dict(r) for r in rec_data]
 
+    def add_recommendation_review(self, movie_ids, rating, body):
+        recommendation_data = {"movie_ids": movie_ids, "rating": rating, "body": body}
+        response, content = self._request("/reviews/", method="POST", body=recommendation_data)
+
+        return content
+        #return models.Recommendation.from_dict(json.loads(content))
+
     def _client_request(self, endpoint, method="GET", body=None, headers=None):
         """
         Helper method for calling API endpoints which require client access

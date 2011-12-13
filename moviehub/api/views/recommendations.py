@@ -6,7 +6,7 @@ from google.appengine.ext import db
 import json
 
 from moviehub.api import api
-from moviehub.core.models import Movie, Recommendation, RecommendationReview
+from moviehub.core.models import Movie, Recommendation, RecommendationReview, ReviewVote
 from moviehub.api.utils import get_error_response
 
 """
@@ -27,7 +27,6 @@ def add_recommendation_review():
                             example: movie_ids=1,2
 
     :param  body            require a string with length between 4 and 1024
-
     :param  rating          require a integer between 0 to 100
 
     """
@@ -150,6 +149,16 @@ def add_recommendation_review():
 
 @api.route("/api/reviews/<int:id>/", methods=["PUT"])
 def edit_recommendation_review(id):
+    """
+    edit an existing review
+
+    put data
+    ========
+    :param  body            require a string with length between 4 and 1024
+    :param  rating          require a integer between 0 to 100
+
+    """
+
     review = RecommendationReview.get_by_id(id)
     if not review:
         return get_error_response(
@@ -159,9 +168,26 @@ def edit_recommendation_review(id):
     if not review.author == g.api_user:
         return get_error_response(
             message="No permission",
-            status_code=401 # authorization
+            status_code=403 # forbidden
         )
+
     return "TODO: implement logic to edit"
+
+@api.route("/api/reviews/<int:review_id>/vote/<any(upvote,downvote):vote>/", methods=["GET"])
+def review_vote(review_id, vote):
+    vote_score = {"upvote": 1, "downvote": -1}[vote]
+
+    review = RecommendationReview.get_by_id(review_id)
+    if not review:
+        return get_error_response(
+            message="Resource not found",
+            status_code=404
+        )
+
+    rev_vote = ReviewVote.make_vote(vote_score, g.api_user, review)
+    if rev_vote:
+        return json.dumps(rev_vote.to_dict())
+    return "Gick inte bra..."
 
 @api.route("/api/movies/<int:movie_id>/recommendations/")
 def get_recommendations(movie_id):
@@ -172,9 +198,13 @@ def get_recommendations(movie_id):
             status_code=404
         )
 
-    recs = Recommendation.all().filter("movies = ", movie)
+    recs = Recommendation.all().filter("movies = ", movie).order("-rating")
 
     return json.dumps([rec.to_dict() for rec in recs])
+
+@api.route("/api/reviews/<int:id>/")
+def get_review(id):
+    return json.dumps(RecommendationReview.get_by_id(id).to_dict())
 
 #@api.route("/api/recommendations/<int:id>/")
 #def get_recommendation(id):
