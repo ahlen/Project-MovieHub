@@ -32,9 +32,8 @@ def extract_movie_data(imdb_id):
     # if no movie exists
     if movie_data[0] == "Nothing found.":
         return dict(
-            #image_url="",
-            #description="",
-            # what else?
+            image_url="",
+            description="",
         )
 
     movie = dict()
@@ -50,4 +49,5 @@ def extract_movie_data(imdb_id):
                 return movie
     except:
         # return same result as when the movie doesn't exist in their db
-        return dict()
+        return dict(image_url="", description="")
+    return dict(image_url="", description="")

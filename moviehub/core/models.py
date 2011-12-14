@@ -54,6 +54,13 @@ class Client(db.Model):
 
         self.secret = h.hexdigest()
 
+    def to_dict(self):
+        return dict(
+            id=self.key().id(),
+            name=self.name,
+            redirect_uri=self.redirect_uri
+        )
+
 class TestArticle(db.Model):
     title = db.StringProperty(required=True)
     content = db.TextProperty()

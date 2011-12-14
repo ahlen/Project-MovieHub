@@ -38,7 +38,8 @@
 
                 <div>
                     <a href="{{ url_for("frontend.show_movie", id=target.id) }}">Read about {{ target.title }}</a> | <a
-                        href="#">Read all motivations</a>
+                        href="{{ url_for("frontend.show_recommendation", id=recommendation.id) }}">Read all
+                    motivations</a>
                 </div>
             </div>
         </div>
@@ -59,6 +60,15 @@
         </div>
 
         <div class="span13">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+              <div class="span13">
+                {% for category, message in messages %}
+                  <div class="alert-message {{ category }}"><p>{{ message }}</p></li>
+                {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
             <div class="span13">
                 <h1 style="margin-bottom: 5px;">{{ movie.title }}</h1>
 
@@ -71,32 +81,42 @@
                     <button id="before_new_recommendation_btn" class="btn large primary">Add new recommendation</button>
                 </div>
 
-                <form id="new_recommendation" action="/movies/{{ movie.id }}/recommendations/" method="post"
+                <form id="new_recommendation" action="/movies/{{ movie.id }}/" method="post"
                       class="form-stacked">
                     <fieldset>
                         <legend>Add recommendation</legend>
-                        <div class="clearfix">
+                        {% if form.errors %}
+                        <div class="alert-message block-message error">
+                            <ul class="errors">
+                                {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+                                    {% for error in field_errors %}
+                                        <li>{{ form[field_name].name }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        <div class="clearfix{% if form.target_id.errors %} error{% endif %}">
                             <div>
-                                <input type="text" id="target_id" name="target_id" class="xlarge"
-                                       placeholder="Select a movie by id">
+                                {{ form.target_id(class_="xlarge", placeholder="Select a movie by id") }}
 
                                 <button id="find_movie" data-controls-modal="find-movie-modal"
                                         data-backdrop="true" data-keyboard="true" class="btn medium primary">Find movie
-                                 </button>
+                                </button>
                             </div>
                         </div>
-                        <div class="clearfix">
+                        <div class="clearfix{% if form.reason.errors %} error{% endif %}">
                             <div class="input">
-                                <textarea rows="6" id="motivation" name="motivation" class="xxlarge"
-                                          placeholder="Motivation why you suggest the recommendation"></textarea>
+                                {{ form.reason(class_="xxlarge", placeholder="Motivate why you suggest the recommendation", rows="6") }}
                             </div>
                         </div>
-                        <div class="clearfix">
+                        <div class="clearfix{% if form.rating.errors %} error{% endif %}">
                             <label for="rating">Match %</label>
 
                             <div class="input">
                                 <input type="range" id="rating" name="rating" class="xxlarge"
-                                       placeholder="Add new rating" min="0" max="100">
+                                       placeholder="Add new rating" min="0" max="100" value="{{ form.rating.data }}">
                             </div>
                         </div>
                         <div class="actions">
@@ -137,8 +157,10 @@
     <script type="text/javascript">
         $(document).ready(function () {
             /* progressive enhancement :) */
-            $("#new_recommendation").hide();
-            $("#before_new_recommendation").show();
+            {% if not form.errors %}
+                $("#new_recommendation").hide();
+                $("#before_new_recommendation").show();
+            {% endif %}
         });
 
         $("#before_new_recommendation_btn").click(function () {
@@ -146,7 +168,7 @@
             $("#new_recommendation").show();
         });
 
-        $("#select-movie-btn").click(function() {
+        $("#select-movie-btn").click(function () {
             $("#target_id").val($("input[name='selected_movie_id']:checked").val());
 
             $("#find-movie-modal").modal("hide");
@@ -154,16 +176,16 @@
 
         $("#find-movie-modal").bind("show", function () {
             $.getJSON("/_/movies/all/",
-                function(data) {
-                    $(".inputs-list").text("");
-                    $.each(data, function(i, item) {
-                        output = "<li style=\"padding: 4px 0 4px 0; border-bottom: solid 1px #e4e4e4;\"><label>";
-                        output += "<input type=\"radio\" name=\"selected_movie_id\" value=\"" + item.id + "\">";
-                        output += "<span>" + item.title + " (" + item.id + ")</span>";
-                        output += "</label></li>";
-                        $(".inputs-list").append(output);
-                    })
-                }
+                    function (data) {
+                        $(".inputs-list").text("");
+                        $.each(data, function (i, item) {
+                            output = "<li style=\"padding: 4px 0 4px 0; border-bottom: solid 1px #e4e4e4;\"><label>";
+                            output += "<input type=\"radio\" name=\"selected_movie_id\" value=\"" + item.id + "\">";
+                            output += "<span>" + item.title + " (" + item.id + ")</span>";
+                            output += "</label></li>";
+                            $(".inputs-list").append(output);
+                        })
+                    }
             )
         })
     </script>

@@ -6,7 +6,7 @@ from moviehubapi import Moviehub, models, exceptions
 frontend = Blueprint("frontend", __name__, template_folder="templates")
 
 # wrapper around moviehub REST api.
-moviehub = Moviehub(client_id="demo", client_secret="demo")
+moviehub = Moviehub(client_id="10", client_secret="6230c1b6200f663733b256b35b23a5adf0d45b8b", access_token="abc")
 
 import views
 

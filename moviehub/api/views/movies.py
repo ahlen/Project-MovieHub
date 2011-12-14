@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import request, Response, make_response
 import json
+from flask.globals import g
 
 from moviehub.api import api # import our blueprint
 from moviehub.core.models import Movie
@@ -8,25 +9,26 @@ from moviehub.api.utils import get_error_response, json_result
 
 
 
-@api.route("/api/movies/<int:movie_id>/", methods=["GET"])
-def show_movie(movie_id):
+@api.route("/api/movies/<int:id>/", methods=["GET"])
+@api.require_client
+def show_movie(id):
     """
     return a single movie by id
 
-    get data
-    ========
-    :param      movie_id        id of the movie that should be returned
+    path data
+    =========
+    :param      id        id of the movie that should be returned
 
     """
     from moviehub.api import tmdb
 
-    movie = Movie.get_by_id(movie_id)
+    movie = Movie.get_by_id(id)
     if not movie:
         return get_error_response(
             message="Could not find resource",
             status_code=404
         )
-    #movies.get(movie_id)
+
     tmdb_data = tmdb.extract_movie_data(movie.imdb_id)
 
     movie_result = movie.to_dict()
@@ -38,6 +40,7 @@ def show_movie(movie_id):
     return json_result(json.dumps(movie_result))
 
 @api.route("/api/movies/")
+@api.require_client
 def get_all_movies():
     """
     returns a list of all movies
@@ -90,11 +93,49 @@ def get_all_movies():
         json.dumps([movie.to_dict(movie, include_remote=include_remote, only_id=only_ids) for movie in movies])
     )
 
-@api.route("/api/movies/<int:id>/like", methods=["POST"])
+@api.route("/api/movies/<int:id>/like/")
+@api.require_user
+def check_like_movie(id):
+    """
+    used to see if current user like selected movie
+
+    path data
+    =========
+    :param      id      id of the movie that should be liked
+    """
+    like = Movie.gql("WHERE id = :1 AND likes = :2", id, g.api_user).get()
+    if like:
+        return "true"
+    return "false"
+
+@api.route("/api/movies/<int:id>/like/", methods=["POST", "DELETE"])
+@api.require_user
 def like_movie(id):
+    """
+    used to add or remove a like to a movie
+
+    path data
+    =========
+    :param      id      id of the movie that should be liked
+    """
+
     movie = Movie.get_by_id(id)
-    #if not movie:
-    #    return get_error_response(
-    #
-    #    )
-    return ""
+    if not movie:
+        return get_error_response(
+            message="Resource not found",
+            status_code=404
+        )
+    try:
+        if request.method == "POST":
+            if not g.api_user.key() in movie.likes:
+                movie.likes.append(g.api_user.key())
+                movie.put()
+        else:
+            movie.likes.remove(g.api_user.key())
+            movie.put()
+    except ValueError:
+        return get_error_response(
+            message="User does not like this movie",
+            status_code=400
+        )
+    return "true"

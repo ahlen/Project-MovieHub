@@ -2,6 +2,7 @@
 from functools import wraps
 import json
 from flask import Blueprint, g, request
+from moviehub.api.utils import get_error_response
 from moviehub.core.models import Client, User
 from oauth2client.client import OAuth2WebServerFlow
 
@@ -14,16 +15,22 @@ class ApiBlueprint(Blueprint):
     def require_client(self, f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            if not g.api_client:
+                return get_error_response(
+                    message="Not a valid client ",
+                    status_code=400
+                )
             return f(*args, **kwargs)
         return decorated_function
-        #    #if not g.remote_user or not g.remote_client:
-        #    if not g.remote_client:
-        #        return json.dumps({"error": "..."})
-        #    return f(*args, **kwargs)
 
-    def require_client_with_user(self, f):
+    def require_user(self, f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            if not g.api_user:
+                return get_error_response(
+                    message="Not valid user token",
+                    status_code=400
+                )
             return f(*args, **kwargs)
         return decorated_function
 
@@ -58,23 +65,18 @@ def set_client_and_user_access():
     Check and set if the api calls have required
     headers to perform each call
     """
-    # for now, simulate api check for client
     g.api_client = None
     g.api_user = None
-    if "client_id" in request.args and "client_token" in request.args and \
-       request.args["client_id"] == "demo" and request.args["client_token"] == "demo":
-        g.api_client = 1
 
-    g.api_user = User.all().get()
-        #g.api_client = Client()
+    client_id = request.headers.get("client_id", None) or request.args.get("client_id", None)
+    client_secret = request.headers.get("client_secret", None) or request.args.get("client_secret", None)
 
-    #if not "token" in request.args and request.args["token"] == "abc":
-    #    g.remote_client = 1
-    #    return
-    #g.remote_client = None
-    #if not "token" in request.args:
-    #    g.remote_client = None
-    #    return
-    #else:
-    #    if request.args["token"] == "abc":
-    #        g.remote_client = 1
+    if client_id and client_secret:
+        client = True
+        #client = Client.gql("WHERE id = :1 AND client_secret = :2", client_id, client_secret).get()
+        if client:
+            g.api_client = Client.all().get()
+
+    token = request.headers.get("token", None) or request.args.get("token", None)
+    if token and token == "abc":
+        g.api_user = User.all().get()

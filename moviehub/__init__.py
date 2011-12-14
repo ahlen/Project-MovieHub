@@ -170,7 +170,8 @@ def add_sample_data():
 
     u.put()
 
-    client = Client(redirect_uri="http://www.demo.se", name="Demo", secret="TEST", user=u)
+    client = Client(redirect_uri="http://www.demo.se", name="Demo", user=u)
+    client.generate_secret()
     client.put()
 
     return "User: " + str(u.key().id())

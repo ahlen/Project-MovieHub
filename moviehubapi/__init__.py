@@ -6,142 +6,119 @@ import json
 
 from moviehubapi import exceptions, security, models
 
-class Moviehub(object):
-    API_URL = "http://localhost:8081/api"
-    #API_URL = "https://movie-hub.appspot.com/api"
+import os
 
+class Moviehub(object):
     """
-    This represent the HTTP API from Moviehub
+    This is a wrapper around the HTTP API from Moviehub
     which aims to give easy access to all clients and client with user access APIs
-    ...
     """
+
+    # TODO: just for dev. we need to use localhost...
+    if os.environ['SERVER_SOFTWARE'].startswith('Development'):
+        API_URL = "http://localhost:8081/api"
+    else:
+        API_URL = "https://movie-hub.appspot.com/api/"
 
     def __init__(self, client_id, client_secret, redirect_uri=None, access_token=None):
-        if not client_id and not secret:
-            raise Exception("You need to provide both client_id and secret " \
-                            "which you can find on https://movie-hub.appspot.com/admin/apps/")
         self.client_id = client_id
         self.client_secret = client_secret
-
-        # these may be used within kwargs...
-        self.access_token = access_token
         self.redirect_uri = redirect_uri
+        self.access_token = access_token
 
     # decorator to DRY the logic to check if
     # the endpoint require "client with user access"
     # so we can handle the such logic on client side
     # even if it's not necessary to handle here.
-    def require_access_token(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            pass # check logic
-        return decorated_function
+    def require_access_token(self):
+        if not self.access_token:
+            raise Exception("this method require an access_token")
 
     def info(self):
         """
         Give basic information about the client owner and
         basic information about the user if access_token is provided
         """
+        response, content = self._client_request("/info/")
+        if not response.status == 200:
+            self._handle_error(content)
+
+    # profiles
+    # ========
+    def me(self):
+        self.require_access_token()
+
         pass
 
-    @require_access_token
-    def me(self, access_token=None):
+    # movies
+    # ======
+
+    def movies(self):
         """
-        Give basic information about the user if access_token is provided
+        return a list of all movies within from moviehub
         """
-        pass
-
-    def articles(self):
-        response, content = self._request("/articles/", method="GET")
-        articles_dict = json.loads(content)
-        articles=[]
-        for article in articles_dict:
-            articles.append(models.Article.from_dict(article))
-        return articles
-        #article_data = self._request("articles/")
-        #return models.
-
-    def add_article(self, title, content):
-        article_data = {"title": title, "content": content}
-        response, content = self._request("/articles/", method="POST", body=article_data)
-
-        return models.Article.from_dict(json.loads(content))
-
-    def article(self, id):
-        response, content = self._request("/articles/%d/" % id, method="GET")
-        #return content
-        return models.Article.from_dict(json.loads(content))
-
-    def reviews(self):
-        response, content = self._request("/reviews/", method="GET")
-        reviews_dict = json.loads(content)
-        reviews=[]
-        for review in reviews_dict:
-            reviews.append(models.Review.from_dict(review))
-        return reviews
-
-    def add_review(self, title, content):
-        review_data = {"title": title, "text": content}
-        response, content = self._request("/reviews/", method="POST", body=review_data)
-
-        return models.Review.from_dict(json.loads(content))
-
-    def review(self, id):
-        response, content = self._request("/reviews/%d/" % id, method="GET")
-        #return content
-        return models.Review.from_dict(json.loads(content))
+        response, content = self._client_request("/movies/")
+        if not response.status == 200:
+            self._handle_error(content)
+        return [models.Movie.from_dict(movie) for movie in json.loads(content)]
 
     def movie(self, id):
         """
         Give information about a single movie by given identifier.
         """
-        response, movie_data = self._request("/movies/%d/" % id)
+        response, content = self._client_request("/movies/%d/" % id)
         if not response.status == 200: # handle this when we not get ok response
-            error_data = json.loads(movie_data).get("error")
-            raise exceptions.MoviehubApiError(
-                type=error_data.get("type"),
-                message=error_data.get("message")
-            )
+            self._handle_error(content)
 
-        return models.Movie.from_dict(json.loads(movie_data))
+        return models.Movie.from_dict(json.loads(content))
 
-    def movies(self, limit=100):
-        """
-        Get all movies from the API
-        """
-        response, movies_data = self._request("/movies/")
-        if not response.status == 200:
-            error_data = json.loads(movie_data).get("error")
-            raise exceptions.MoviehubApiError(
-                type=error_data.get("type"),
-                message=error_data.get("message")
-            )
-        return [models.Movie.from_dict(movie) for movie in json.loads(movies_data)]
+    # recommendations/reasons
+    # =======================
 
     def recommendations(self, movie_id):
-        response, content = self._request("/movies/%d/recommendations/" % movie_id)
-        rec_data = json.loads(content)
+        """
+        get all recommendations for a movie
+        """
+        response, content = self._client_request("/movies/%d/recommendations/" % movie_id)
         if not response.status == 200:
-            error_data = rec_data.get("error")
-            raise exceptions.MoviehubApiError(
-                type=error_data.get("type"),
-                message=error_data.get("message")
-            )
-        return [models.Recommendation.from_dict(r) for r in rec_data]
+            self._handle_error(content)
+        return [models.Recommendation.from_dict(r) for r in json.loads(content)]
 
-    def add_recommendation_review(self, movie_ids, rating, body):
-        recommendation_data = {"movie_ids": movie_ids, "rating": rating, "body": body}
-        response, content = self._request("/reasons/", method="POST", body=recommendation_data)
+    def add_reason(self, movie_ids, rating, body):
+        """
+        add a new reason for a movie
+        """
+        self.require_access_token()
 
-        return content
-        #return models.Recommendation.from_dict(json.loads(content))
+        reason = dict(movie_ids=movie_ids, rating=str(rating), body=body)
+        response, content = self._user_request("/reasons/", method="POST", body=reason)
+
+        if not response.status == 200:
+            self._handle_error(content)
+
+        return models.Reason.from_dict(json.loads(content))
+
+    # internal helpers
+    # ================
 
     def _client_request(self, endpoint, method="GET", body=None, headers=None):
-        """
-        Helper method for calling API endpoints which require client access
-        """
-        # TODO: add client request headers
-        return _request(self, endpoint, method, body, headers)
+        if headers is None:
+            headers = dict()
+        headers.update(
+            client_id=self.client_id,
+            client_secret=self.client_secret
+        )
+
+        return self._request(endpoint, method, body, headers)
+
+    def _user_request(self, endpoint, method="GET", body=None, headers=None):
+        if headers is None:
+            headers = dict()
+        headers.update(
+            token=self.access_token
+        )
+
+        return self._request(endpoint, method, body, headers)
 
     def _request(self, endpoint, method="GET", body=None, headers=None):
         http = httplib2.Http()
@@ -158,5 +135,9 @@ class Moviehub(object):
 
         return response, content
 
-
-
+    def _handle_error(self, data):
+        error_data = json.loads(data).get("error")
+        raise exceptions.MoviehubApiError(
+            type=error_data.get("type"),
+            message=error_data.get("message")
+        )

@@ -9,13 +9,8 @@ from moviehub.api import api
 from moviehub.core.models import Movie, Recommendation, RecommendationReason, ReasonVote
 from moviehub.api.utils import get_error_response
 
-"""
-GET /api/movies/{id}/recommendations/
-POST /api/movies/{id}/recommendations/
-GET /api/recommendations/{id}/
-"""
-
 @api.route("/api/reasons/", methods=["POST"])
+@api.require_user
 def add_recommendation_reason():
     """
     add new recommendation reason to two movies
@@ -152,14 +147,19 @@ def add_recommendation_reason():
 
 
 @api.route("/api/reasons/<int:id>/", methods=["PUT"])
+@api.require_user
 def edit_recommendation_reason(id):
     """
     edit an existing reason
 
+    path data
+    =========
+    :param      id              id of the reason to update
+
     put data
     ========
-    :param  body            require a string with length between 4 and 1024
-    :param  rating          require a integer between 0 to 100
+    :param      body            require a string with length between 4 and 1024
+    :param      rating          require a integer between 0 to 100
 
     """
 
@@ -179,6 +179,7 @@ def edit_recommendation_reason(id):
 
 
 @api.route("/api/reasons/<int:reason_id>/vote/", methods=["POST"])
+@api.require_user
 def add_reason_vote(reason_id):
     """
     Add or update vote for a recommendation reason.
@@ -214,6 +215,7 @@ def add_reason_vote(reason_id):
 
 
 @api.route("/api/reasons/<int:reason_id>/vote/", methods=["DELETE"])
+@api.require_user
 def delete_reason_vote(reason_id):
     reason = RecommendationReason.get_by_id(reason_id)
     if not reason:
@@ -233,6 +235,7 @@ def delete_reason_vote(reason_id):
 
 
 @api.route("/api/reasons/<int:reason_id>/vote/")
+@api.require_user
 def get_vote_for_reason(reason_id):
     """
     get the current users vote data if it exists
@@ -254,6 +257,7 @@ def get_vote_for_reason(reason_id):
 
 
 @api.route("/api/movies/<int:movie_id>/recommendations/")
+@api.require_client
 def get_recommendations(movie_id):
     movie = Movie.get_by_id(movie_id)
     if not movie:
@@ -268,11 +272,13 @@ def get_recommendations(movie_id):
 
 
 @api.route("/api/reasons/<int:id>/")
+@api.require_client
 def get_reason(id):
     return json.dumps(RecommendationReason.get_by_id(id).to_dict())
 
 
 @api.route("/api/recommendations/exists/")
+@api.require_client
 def get_recommendation_exists():
     """
     Check if a recommendation between two movies exists

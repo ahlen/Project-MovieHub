@@ -2,13 +2,21 @@
 
 import json
 from google.appengine.api import urlfetch
+from flask.globals import g
 
 from oauth2client.client import FlowExchangeError
 
 from flask import request, redirect, session
 from moviehub.api import api
-from moviehub.api.utils import get_error_response
+from moviehub.api.utils import get_error_response, json_result
 from moviehub.core.models import Client, User
+
+@api.route("/api/info/")
+@api.require_client
+def client_info():
+    client = g.api_client
+
+    return json_result(json.dumps(client.to_dict()))
 
 # TODO: add control if the user is authenticated and if he is,
 # this scenarios can happen with response_type==code:
@@ -24,7 +32,6 @@ from moviehub.core.models import Client, User
 #       return a new unique token
 # - if the code is invalid
 #       return error response
-
 
 @api.route("/api/auth/")
 def auth():
