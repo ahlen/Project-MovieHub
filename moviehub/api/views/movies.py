@@ -10,6 +10,14 @@ from moviehub.api.utils import get_error_response, json_result
 
 @api.route("/api/movies/<int:movie_id>/", methods=["GET"])
 def show_movie(movie_id):
+    """
+    return a single movie by id
+
+    get data
+    ========
+    :param      movie_id        id of the movie that should be returned
+
+    """
     from moviehub.api import tmdb
 
     movie = Movie.get_by_id(movie_id)
@@ -82,29 +90,11 @@ def get_all_movies():
         json.dumps([movie.to_dict(movie, include_remote=include_remote, only_id=only_ids) for movie in movies])
     )
 
-
-    #except:
-    #return get_error_response("Hello world")
-
-#    if movie_id % 2 == 0:
-#        response = Response(
-#            json.dumps({"error": {"type": "NoResourceFound", "message": "Could not find the resource"}}),
-#            mimetype="application/json",
-#            status=404
-#        )
-#
-#        return response
-#    else:
-#        response = Response(
-#            json.dumps(
-#                {"movie":
-#                    {"title": "Min film",
-#                    "imdb_id": "tt137481231",
-#                     }
-#                }
-#            ),
-#            mimetype="application/json",
-#            status=200
-#        )
-#
-#        return response
+@api.route("/api/movies/<int:id>/like", methods=["POST"])
+def like_movie(id):
+    movie = Movie.get_by_id(id)
+    #if not movie:
+    #    return get_error_response(
+    #
+    #    )
+    return ""
