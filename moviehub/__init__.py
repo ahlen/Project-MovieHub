@@ -142,7 +142,7 @@ def request_token():
 @app.route("/_data/add/")
 def add_sample_data():
     from moviehub.core.models import Movie, Client
-    from moviehub.core.models import Review
+    #from moviehub.core.models import Review
     from google.appengine.ext import db
 
 
@@ -174,7 +174,6 @@ def add_sample_data():
     client.put()
 
     return "User: " + str(u.key().id())
-
 
     #client = Client(redirect_uri="http://localhost:8080/login/", name="Moviehub")
     #client.generate_secret()

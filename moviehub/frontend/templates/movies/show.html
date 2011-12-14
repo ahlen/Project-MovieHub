@@ -11,19 +11,24 @@
         <div class="row">
             <div class="span2">
                 {% if target.image_url %}
-                <img src="{{ target.image_url }}" style="width: 100px; display: block;">
+                    <img src="{{ target.image_url }}" alt="" style="width: 100px; display: block;">
                 {% else %}
-                <div style="width: 100px; background: #e4e4e4;">
-                    <div style=" border: 1px solid #ccc; height: 156px;">
+                    <div style="width: 100px; background: #e4e4e4;">
+                        <div style=" border: 1px solid #ccc; height: 156px;">
 
+                        </div>
                     </div>
-                </div>
                 {% endif %}
             </div>
             <div class="span11">
                 <h3>{{ target.title }}</h3>
+
                 <p>
-                    <a href="#">{{ recommendation.author.full_name }}</a> and 35 other gave a match of {{ recommendation.rating }}% to suggest that you also should see <a href="#">{{ target.title }}</a> if you liked {{ source.title }} because:
+                    <a href="#">{{ recommendation.author.full_name }}</a>{% if not recommendation.upvotes_count==0 %}
+                    and {{ recommendation.upvotes_count }} other{% endif %} gave a match of {{ recommendation.rating }}%
+                    to suggest that you also should see <a
+                        href="{{ url_for("frontend.show_movie", id=target.id) }}">{{ target.title }}</a> if you
+                    liked {{ source.title }} because:
                 </p>
                 <blockquote>
                     <p>
@@ -32,19 +37,9 @@
                 </blockquote>
 
                 <div>
-                    <a href="#">Read about {{ target.title }}</a>
+                    <a href="{{ url_for("frontend.show_movie", id=target.id) }}">Read about {{ target.title }}</a> | <a
+                        href="#">Read all motivations</a>
                 </div>
-
-                <!--<h3>{{ target.title }}</h3>
-                <p>
-                    {{ target.description }}
-                </p>
-                <blockquote>
-                    <p>
-                        {{ recommendation.body }}
-                    </p>
-                    <small>{{ recommendation.author.full_name }}</small>
-                </blockquote>-->
             </div>
         </div>
     </div>
@@ -72,13 +67,22 @@
                 </p>
             </div>
             <div class="span13">
-                <form action="/movies/{{ movie.id }}/recommendations/" method="post" class="form-stacked">
+                <div id="before_new_recommendation" style="display: none; padding-bottom: 10px;">
+                    <button id="before_new_recommendation_btn" class="btn large primary">Add new recommendation</button>
+                </div>
+
+                <form id="new_recommendation" action="/movies/{{ movie.id }}/recommendations/" method="post"
+                      class="form-stacked">
                     <fieldset>
                         <legend>Add recommendation</legend>
                         <div class="clearfix">
                             <div>
-                                <input type="text" id="target_movie" name="target_id" class="xxlarge"
-                                       placeholder="Chose movie (by imdb id or id) (should add possibility to search via text later)">
+                                <input type="text" id="target_id" name="target_id" class="xlarge"
+                                       placeholder="Select a movie by id">
+
+                                <button id="find_movie" data-controls-modal="find-movie-modal"
+                                        data-backdrop="true" data-keyboard="true" class="btn medium primary">Find movie
+                                 </button>
                             </div>
                         </div>
                         <div class="clearfix">
@@ -89,10 +93,10 @@
                         </div>
                         <div class="clearfix">
                             <label for="rating">Match %</label>
-                            
+
                             <div class="input">
                                 <input type="range" id="rating" name="rating" class="xxlarge"
-                                       placeholder="Add new rating">
+                                       placeholder="Add new rating" min="0" max="100">
                             </div>
                         </div>
                         <div class="actions">
@@ -112,16 +116,55 @@
             </div>
         </div>
     </div>
+    <div id="find-movie-modal" class="modal hide fade">
+        <div class="modal-header">
+            <a href="#" class="close">&times;</a>
+
+            <h3>Select a movie</h3>
+        </div>
+        <div class="modal-body">
+            <ul class="inputs-list" style="max-height: 200px; overflow: auto;">
+            </ul>
+        </div>
+        <div class="modal-footer">
+            <a href="#" id="select-movie-btn" class="btn primary">Use movie</a>
+            <a href="#" id="cancel-movie-btn" class="btn secondary">Cancel</a>
+        </div>
+    </div>
 {% endblock %}
 
-<!--
-<div class="span16">
-            <h1>{{ movie.title }}</h1>
-            <p>
-                IMDB Id: {{ movie.imdb_id }}
-            </p>
-            {% if movie.image_url %}
-            <img src="{{ movie.image_url }}" alt="">
-            {% endif %}
-</div>
--->
+{% block ending %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            /* progressive enhancement :) */
+            $("#new_recommendation").hide();
+            $("#before_new_recommendation").show();
+        });
+
+        $("#before_new_recommendation_btn").click(function () {
+            $("#before_new_recommendation").hide();
+            $("#new_recommendation").show();
+        });
+
+        $("#select-movie-btn").click(function() {
+            $("#target_id").val($("input[name='selected_movie_id']:checked").val());
+
+            $("#find-movie-modal").modal("hide");
+        })
+
+        $("#find-movie-modal").bind("show", function () {
+            $.getJSON("/_/movies/all/",
+                function(data) {
+                    $(".inputs-list").text("");
+                    $.each(data, function(i, item) {
+                        output = "<li style=\"padding: 4px 0 4px 0; border-bottom: solid 1px #e4e4e4;\"><label>";
+                        output += "<input type=\"radio\" name=\"selected_movie_id\" value=\"" + item.id + "\">";
+                        output += "<span>" + item.title + " (" + item.id + ")</span>";
+                        output += "</label></li>";
+                        $(".inputs-list").append(output);
+                    })
+                }
+            )
+        })
+    </script>
+{% endblock %}

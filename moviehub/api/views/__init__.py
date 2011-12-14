@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-from moviehub.api.views import movies, articles, auth, recommendations, profiles
+from moviehub.api.views import movies, auth, recommendations, profiles

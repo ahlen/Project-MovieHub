@@ -4,18 +4,9 @@ import json
 
 from moviehub.api import api # import our blueprint
 from moviehub.core.models import Movie
-from moviehub.api.utils import get_error_response
+from moviehub.api.utils import get_error_response, json_result
 
-#movies = {
-#    1: Movie(1, "Tinker Tailor Soldier Spy", "tt1340800"),
-#    2: Movie(2, "New Year's Eve", "tt1598822"),
-#    3: Movie(3, "Young Adult", "tt1625346"),
-#    4: Movie(4, "The Sitter", "tt1366344"),
-#    5: Movie(5, "W.E.", "tt1536048"),
-#    6: Movie(6, "I Melt with You", "tt1691920"),
-#    7: Movie(7, "We Need to Talk About Kevin", "tt1242460"),
-#    8: Movie(8, "The Matrix", "tt0133093"),
-#}
+
 
 @api.route("/api/movies/<int:movie_id>/", methods=["GET"])
 def show_movie(movie_id):
@@ -36,34 +27,29 @@ def show_movie(movie_id):
         description=tmdb_data.get("description", "")
     )
 
-    return json.dumps(movie_result)
+    return json_result(json.dumps(movie_result))
 
-    #return json.dumps(tmdb.extract_movie_data("tt0137523"))
-    # http://api.themoviedb.org/2.1/Movie.imdbLookup/en/json/a314e35b02e9cad181b1f37c96989b95/tt0137523
-    #url = "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/json/a314e35b02e9cad181b1f37c96989b95/tt0137523"
+@api.route("/api/movies/")
+def get_all_movies():
+    """
+    returns a list of all movies
 
-    #http = httplib2.Http()
-    #response, content = http.request(url)
-
-    #movie_data = json.loads(content)
-    #if movie_data[0] == "Nothing found.":
-    #    return "Could not find movie"
-
-    #return str(movie_data)
-
-    #poster = None
-    #for img in in_dict.get("posters"):
-    #    if img.get("")
-
-    #return json.dumps(in_dict.get("posters")[0].get("image").get("url"))
-    #return in_dict.get("posters")
+    get data
+    ========
+    :param      include_remote      When set to true, the lists
+                                    contains image_url and description
+                                    if available from TMDb
+    """
 
 
-    #return json.dumps(movies.get(movie_id).to_dict())
 
-@api.route("/api/latest_movies/")
-def latest_movies():
-    return json.dumps([m.to_dict() for m in movies.values()])
+    movies = Movie.all().order("title")
+
+    return json_result(
+        json.dumps([movie.to_dict() for movie in movies])
+    )
+
+
     #except:
     #return get_error_response("Hello world")
 

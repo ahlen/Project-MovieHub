@@ -6,7 +6,7 @@ from google.appengine.ext import db
 import json
 
 from moviehub.api import api
-from moviehub.core.models import Movie, Recommendation, RecommendationReview, ReviewVote
+from moviehub.core.models import Movie, Recommendation, RecommendationReason, ReasonVote
 from moviehub.api.utils import get_error_response
 
 """
@@ -15,10 +15,10 @@ POST /api/movies/{id}/recommendations/
 GET /api/recommendations/{id}/
 """
 
-@api.route("/api/reviews/", methods=["POST"])
-def add_recommendation_review():
+@api.route("/api/reasons/", methods=["POST"])
+def add_recommendation_reason():
     """
-    add new recommendation review to two movies
+    add new recommendation reason to two movies
     and if the relationship doesn't exists we create it too.
 
     post data
@@ -97,8 +97,8 @@ def add_recommendation_review():
         movie_keys = [movie_left.key(), movie_right.key()]
         movie_keys.sort()
 
-        rec = Recommendation.all().filter("left = ", movie_keys[0]) \
-            .filter("right = ", movie_keys[1]).get()
+        rec = Recommendation.all().filter("left = ", movie_keys[0])\
+        .filter("right = ", movie_keys[1]).get()
 
         # if recommendation doesn't already exists
         if not rec:
@@ -112,34 +112,37 @@ def add_recommendation_review():
             )
             r.put()
 
-            review = RecommendationReview(
+            reason = RecommendationReason(
                 recommendation=r,
                 author=r.author,
                 rating=rating,
                 score=0.0, #empty score because the post is new
                 body=body
             )
-            review.put()
+            reason.put()
 
-            return json.dumps(review.to_dict())
+            r.current_reason=reason
+            r.put()
 
-        if RecommendationReview.gql("WHERE author = :1 AND recommendation = :2", g.api_user, rec).get():
+            return json.dumps(reason.to_dict())
+
+        if RecommendationReason.gql("WHERE author = :1 AND recommendation = :2", g.api_user, rec).get():
             return get_error_response(
-                message="Each author can only write one review per recommendation",
+                message="Each author can only write one reason per recommendation",
                 status_code=400
             )
 
-        # otherwise we create a new review with the recommendation as "parent"
-        review = RecommendationReview(
+        # otherwise we create a new reason with the recommendation as "parent"
+        reason = RecommendationReason(
             recommendation=rec,
             rating=rating,
             author=g.api_user,
             score=0.0,
             body=body
         )
-        review.put()
+        reason.put()
 
-        return json.dumps(review.to_dict())
+        return json.dumps(reason.to_dict())
 
     except ValueError:
         return get_error_response(
@@ -147,10 +150,11 @@ def add_recommendation_review():
             status_code=400
         )
 
-@api.route("/api/reviews/<int:id>/", methods=["PUT"])
-def edit_recommendation_review(id):
+
+@api.route("/api/reasons/<int:id>/", methods=["PUT"])
+def edit_recommendation_reason(id):
     """
-    edit an existing review
+    edit an existing reason
 
     put data
     ========
@@ -159,13 +163,13 @@ def edit_recommendation_review(id):
 
     """
 
-    review = RecommendationReview.get_by_id(id)
-    if not review:
+    reason = RecommendationReason.get_by_id(id)
+    if not reason:
         return get_error_response(
             message="Resource not found",
             status_code=404
         )
-    if not review.author == g.api_user:
+    if not reason.author == g.api_user:
         return get_error_response(
             message="No permission",
             status_code=403 # forbidden
@@ -173,21 +177,81 @@ def edit_recommendation_review(id):
 
     return "TODO: implement logic to edit"
 
-@api.route("/api/reviews/<int:review_id>/vote/<any(upvote,downvote):vote>/", methods=["GET"])
-def review_vote(review_id, vote):
-    vote_score = {"upvote": 1, "downvote": -1}[vote]
 
-    review = RecommendationReview.get_by_id(review_id)
-    if not review:
+@api.route("/api/reasons/<int:reason_id>/vote/", methods=["POST"])
+def add_reason_vote(reason_id):
+    """
+    Add or update vote for a recommendation reason.
+
+    post data
+    =========
+    :param  vote        require either "up" or "down"
+
+    """
+    vote = request.form.get("vote", None)
+    if not vote or not vote in ("up", "down"):
+        return get_error_response(
+            message="Missing required parameter vote or its value is not any of \"up\" or \"down\"",
+            status_code=400
+        )
+
+    vote_score = {"up": 1, "down": -1}[vote]
+
+    reason = RecommendationReason.get_by_id(reason_id)
+    if not reason:
         return get_error_response(
             message="Resource not found",
             status_code=404
         )
 
-    rev_vote = ReviewVote.make_vote(vote_score, g.api_user, review)
+    rev_vote = ReasonVote.make_vote(vote_score, g.api_user, reason)
     if rev_vote:
         return json.dumps(rev_vote.to_dict())
-    return "Gick inte bra..."
+    return get_error_response(
+        message="Could not make vote",
+        status_code=400
+    )
+
+
+@api.route("/api/reasons/<int:reason_id>/vote/", methods=["DELETE"])
+def delete_reason_vote(reason_id):
+    reason = RecommendationReason.get_by_id(reason_id)
+    if not reason:
+        return get_error_response(
+            message="Resource not found",
+            status_code=404
+        )
+
+    vote = ReasonVote.delete_vote(g.api_user, reason)
+    if vote:
+        return json.dumps(vote.to_dict())
+
+    return get_error_response(
+        message="Resource not found",
+        status_code=404
+    )
+
+
+@api.route("/api/reasons/<int:reason_id>/vote/")
+def get_vote_for_reason(reason_id):
+    """
+    get the current users vote data if it exists
+    """
+    reason = RecommendationReason.get_by_id(reason_id)
+    if not reason:
+        return get_error_response(
+            message="Resource not found",
+            status_code=404
+        )
+    vote = ReasonVote.gql("WHERE ANCESTOR is :1 AND author = :2", reason, g.api_user)
+    if vote:
+        return json.dumps(vote.to_dict())
+
+    return get_error_response(
+        message="Resource not found",
+        status_code=404
+    )
+
 
 @api.route("/api/movies/<int:movie_id>/recommendations/")
 def get_recommendations(movie_id):
@@ -202,11 +266,63 @@ def get_recommendations(movie_id):
 
     return json.dumps([rec.to_dict() for rec in recs])
 
-@api.route("/api/reviews/<int:id>/")
-def get_review(id):
-    return json.dumps(RecommendationReview.get_by_id(id).to_dict())
 
-#@api.route("/api/recommendations/<int:id>/")
-#def get_recommendation(id):
-#    p = RecommendationPair.get_by_id(id)
-#    return json.dumps(Recommendation.all().ancestor(p).get().to_dict())
+@api.route("/api/reasons/<int:id>/")
+def get_reason(id):
+    return json.dumps(RecommendationReason.get_by_id(id).to_dict())
+
+
+@api.route("/api/recommendations/exists/")
+def get_recommendation_exists():
+    """
+    Check if a recommendation between two movies exists
+
+    get data
+    ========
+    :param      movie_ids       require a comma-separated list of two movie ids
+                                example: movie_ids=1,2
+    """
+
+    movies = request.args.get("movie_ids", None)
+    if not movies:
+        return get_error_response(
+            message="Missing required parameter movie_ids",
+            status_code=400
+        )
+
+    try:
+        movies = [int(mid) for mid in movies.split(",")[0:2]]
+        if not len(movies) == 2:
+            return get_error_response(
+                message="Input of movie_ids required two id numbers",
+                status_code=400
+            )
+    except ValueError:
+        return get_error_response(
+            message="Input of movie_ids required two id numbers",
+            status_code=400
+        )
+
+    if movies[0] == movies[1]:
+        return get_error_response(
+            message="movie_ids cannot be the same",
+            status_code=400
+        )
+
+    movie_left, movie_right = Movie.get_by_id(movies)
+
+    if not movie_left or not movie_right:
+        return get_error_response(
+            message="Could not find one of the resources",
+            status_code=400
+        )
+
+    movie_keys = [movie_left.key(), movie_right.key()]
+    movie_keys.sort()
+
+    rec = Recommendation.all().filter("left = ", movie_keys[0])\
+    .filter("right = ", movie_keys[1]).get()
+
+    if rec:
+        return "True"
+    return "False"

@@ -18,3 +18,8 @@ def add_review(id):
         body=request.form.get("motivation"),
         rating=request.form.get("rating"),
     )
+
+@frontend.route("/recommendations/<int:id>/")
+def recommendation(id):
+    return render_template("recommendations/show.html")
+

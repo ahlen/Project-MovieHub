@@ -25,7 +25,7 @@ class User(db.Model):
         return dict(
             id=self.key().id(),
             full_name=self.full_name,
-            photo_url=self.photo_url,
+            photo_url=self.photo_url
         )
 
 class Client(db.Model):
@@ -70,6 +70,7 @@ class TestArticle(db.Model):
 class Movie(db.Model):
     title = db.StringProperty(required=True)
     imdb_id = db.StringProperty()
+    likes = db.ListProperty(db.Key)
 
     def to_dict(self, *args, **kwargs):
         # if we only wants the id, just return the dict(id=...)
@@ -93,110 +94,25 @@ class Movie(db.Model):
             )
         return movie
 
-class Review(db.Model):
-    author = db.ReferenceProperty(User, collection_name="reviews")
-    rating = db.RatingProperty()
-    movie = db.ReferenceProperty(Movie, collection_name="reviews")
-    text = db.TextProperty()
-    title = db.StringProperty()
-    created_at = db.DateTimeProperty(auto_now_add=True)
-    updated_at = db.DateTimeProperty(auto_now=True)
-
-    def to_dict(self):
-        return {
-            "id": self.key().id(),
-            "title": self.title,
-            "author": self.author,
-            "rating": self.rating,
-            "movie": self.movie,
-            "text": self.text,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat(),
-        }
-
-
-"""
 class Recommendation(db.Model):
-    author = db.ReferenceProperty(User, collection_name="recommendations")#, required=True)
-    source = db.ReferenceProperty(Movie, collection_name="source_recommendations", required=True)
-    target = db.ReferenceProperty(Movie, collection_name="target_recommendations", required=True)
-    rating = db.RatingProperty(required=True)
-    body = db.TextProperty(required=True)
-    selected_review = db.ReferenceProperty() # should always be of type RecommendationReview
-
-    @classmethod
-    def check_uniqueness(cls, source, target):
-        uniq_left = Recommendation.all().filter("source = ", source) \
-            .filter("target = ", target).get()
-        uniq_right = Recommendation.all().filter("source = ", target) \
-            .filter("target = ", source).get()
-
-        return not uniq_left and not uniq_right
-
-    def to_dict(self):
-        return dict(
-            id=self.parent_key().id(),
-            author=self.author.to_dict(),
-            source=self.source.to_dict(include_remote=True),
-            target=self.target.to_dict(include_remote=True),
-            rating=self.rating,
-            body=self.body
-        )
-
-class RecommendationPair(db.Model):
-    movies = db.ListProperty(item_type=db.Key)
-
-class RecommendationReview(db.Model):
-    recommendation = db.ReferenceProperty(Recommendation)
-    author = db.ReferenceProperty(User, collection_name="recommendation_reviews")
-    rating = db.RatingProperty(required=True)
-    body = db.TextProperty(required=True)
-"""
-"""
-Rewrite to this model:
-
-Recommendation have
-    author
-    source
-    target
-    rating
-    body
-    selected_review
-    created_at
-
-RecommendationReview have
-    recommendation (reference)
-    author
-    rating (author chosen)
-    score (users up/down vote)
-    body
-    created_at
-
-RecommendationIndex have (two-way) and belongs to parent
-    source
-    target
-    rating
-
-    (so we can do filter(source=this).order(rating))
-"""
-
-class Recommendation(db.Model):
-    author = db.ReferenceProperty(User, collection_name="recommendations")
     movies = db.ListProperty(db.Key)
     left = db.ReferenceProperty(Movie, collection_name="_left_recommendations")
     right = db.ReferenceProperty(Movie, collection_name="_right_recommendations")
-    #source = db.ReferenceProperty(Movie, collection_name="source_recommendations")
-    #target = db.ReferenceProperty(Movie, collection_name="target_recommendations")
-    rating = db.RatingProperty()
-    body = db.TextProperty()
-    selected_review = db.ReferenceProperty() # should always be RecommendationReview
     created_at = db.DateTimeProperty(auto_now_add=True)
     updated_at = db.DateTimeProperty(auto_now=True)
+    reason_count = db.IntegerProperty(default=0)
 
-    def top_reviews(self, *args, **kwargs):
+    # reason denormalized properties
+    rating = db.RatingProperty()
+    upvotes_count = db.IntegerProperty(default=0)
+    body = db.TextProperty()
+    author = db.ReferenceProperty(User, collection_name="recommendations")
+    current_reason = db.ReferenceProperty() # should always be RecommendationReason
+
+    def top_reasons(self, *args, **kwargs):
         limit = max(min(kwargs.get("limit", 10), 10), 1)
 
-        return RecommendationReview.all().filter("recommendation=", self.key()).order("score").fetch(limit=limit)
+        return RecommendationReason.all().filter("recommendation=", self.key()).order("score").fetch(limit=limit)
 
     def to_dict(self, *args, **kwargs):
         if kwargs.get("only_id", False):
@@ -209,54 +125,57 @@ class Recommendation(db.Model):
                 author=self.author.to_dict(),
                 movies=[movie.to_dict(include_remote=True) for movie in Movie.get(self.movies)],
                 rating=self.rating,
+                upvotes_count=self.upvotes_count,
                 body=self.body,
                 created_at=self.created_at.isoformat(),
                 updated_at=self.updated_at.isoformat()
             )
 
-        if kwargs.get("include_top_reviews", False):
-            reviews_count = max(min(kwargs.get("reviews_count", 10), 1))
+        if kwargs.get("include_top_reasons", False):
+            reasons_count = max(min(kwargs.get("reasons_count", 10), 1))
             recommendation.update(
-                reviews=self.top_reviews(limit=reviews_count)
+                reasons=self.top_reasons(limit=reasons_count)
             )
 
         return recommendation
 
-class RecommendationReview(db.Model):
+class RecommendationReason(db.Model):
     recommendation = db.ReferenceProperty(Recommendation, required=True)
-    author = db.ReferenceProperty(User, collection_name="recommendation_reviews", required=True)
+    author = db.ReferenceProperty(User, collection_name="recommendation_reasons", required=True)
     rating = db.RatingProperty(required=True)
     score = db.FloatProperty(default=0.0)
+    upvotes_count = db.IntegerProperty(default=0)
     body = db.TextProperty(required=True)
     created_at = db.DateTimeProperty(auto_now_add=True)
     updated_at = db.DateTimeProperty(auto_now=True)
 
     def to_dict(self, *args, **kwargs):
-        review = dict(
+        reason = dict(
             id=self.key().id(),
             author=self.author.to_dict(),
             rating=self.rating,
             body=self.body,
             score=self.score,
+            upvotes_count=self.upvotes_count,
             created_at=self.created_at.isoformat(),
             updated_at=self.updated_at.isoformat(),
         )
         if kwargs.get("include_recommendation", False):
-            review.update(
+            reason.update(
                 recommendation=self.recommendation.to_dict()
             )
         else:
-            review.update(
+            reason.update(
                 recommendation=self.recommendation.to_dict(only_id=True)
             )
 
-        return review
+        return reason
 
-class ReviewVote(db.Model):
+class ReasonVote(db.Model):
     """
-    review vote is used to up- or downvote a recommendation review
+    Reason vote is used to up- or downvote a recommendation reason
 
-    when used set parent to the RecommendationReview instance
+    when used set parent to the RecommendationReason instance
     """
 
     UPVOTE=1
@@ -266,30 +185,51 @@ class ReviewVote(db.Model):
     vote = db.FloatProperty(default=0.0)
 
     @classmethod
-    def make_vote(cls, vote, user, parent):
+    def get_vote(cls, user, parent):
+        return ReasonVote.gql("WHERE ancestor is :1 and author = :2", parent, user).get()
 
+    @classmethod
+    def make_vote(cls, vote, user, parent):
         def vote_in_tx():
-            v = ReviewVote.gql("WHERE ancestor is :1 and author = :2", parent, user).get()
+            v = cls.get_vote(user, parent)
             if not v:
-                v = ReviewVote(author=user, parent=parent)
+                v = ReasonVote(author=user, parent=parent)
             else:
-                if not ((vote == cls.DOWNVOTE and v.vote <= -1) or (vote == cls.UPVOTE and vote.v >= 1)):
-                    parent.score += -(v.vote) # undo earlier score
+                parent.score += -(v.vote) # reset old vote
+                if v.vote >= 1:
+                    # if upvote we decrease the upvotes_count
+                    parent.upvotes_count += 1
 
             if vote == -1:
                 v.vote = cls.DOWNVOTE * user.trust_score
             elif vote == 1:
+                parent.upvotes_count += 1
                 v.vote = cls.UPVOTE * user.trust_score
             else:
                 return
 
-            parent.score += v.vote
-            db.put([parent, v]) # save both parent and review
+            parent.score += float(v.vote)
+            db.put([parent, v]) # save both parent and reason
 
             return v
         vote = db.run_in_transaction(vote_in_tx)
 
         return vote
+
+    @classmethod
+    def delete_vote(cls, user, parent):
+        def delete_in_tx():
+            vote = cls.get_vote(user, parent)
+            if not vote:
+                return False # return false if no vote exists
+
+            parent.score += -(vote.vote)
+            parent.upvotes_count -= 1
+            vote.delete()
+            parent.put()
+
+            return True
+        return db.run_in_transaction(delete_in_tx)
 
     def to_dict(self, *args, **kwargs):
         if self.vote >= 1:
@@ -298,7 +238,7 @@ class ReviewVote(db.Model):
             vote_type = "downvote"
 
         return dict(
-            recommendation_review=self.parent().to_dict(),
+            recommendation_reason=self.parent().to_dict(),
             author=self.author.to_dict(),
             vote=vote_type
         )

@@ -34,53 +34,14 @@ class Movie(object):
             data.get("description")
         )
 
-class Article(object):
-    def __init__(self, id, title, content, created_at):
-        self.id = id
-        self.title = title
-        self.content = content
-        self.created_at = datetime.datetime.strptime(created_at[0:19], "%Y-%m-%dT%H:%M:%S")
-
-    @classmethod
-    def from_dict(cls, data):
-        return Article(
-            data.get("id"),
-            data.get("title"),
-            data.get("content"),
-            data.get("created_at")
-        )
-
-class Review(object):
-    def __init__(self, id, title, author, rating, movie, text, created_at, updated_at):
-        self.id = id
-        self.title = title
-        self.author = author
-        self.rating = rating
-        self.movie = movie
-        self.text = text
-        self.created_at = datetime.datetime.strptime(created_at[0:19], "%Y-%m-%dT%H:%M:%S")
-        self.updated_at = datetime.datetime.strptime(created_at[0:19], "%Y-%m-%dT%H:%M:%S")
-
-    @classmethod
-    def from_dict(cls, data):
-        return Review(
-            data.get("id"),
-            data.get("title"),
-            data.get("author"),
-            data.get("rating"),
-            data.get("movie"),
-            data.get("text"),
-            data.get("created_at"),
-            data.get("updated_at")
-        )
-
 class Recommendation(object):
-    def __init__(self, id, author, rating, movies, body):
+    def __init__(self, id, author, rating, movies, body, upvotes_count):
         self.id = id
         self.author = author
         self.rating = rating
         self.movies = movies
         self.body = body
+        self.upvotes_count = upvotes_count
 
     @classmethod
     def from_dict(cls, data):
@@ -89,5 +50,8 @@ class Recommendation(object):
             author=User.from_dict(data.get("author")),
             rating=int(data.get("rating")),
             movies=[Movie.from_dict(movie) for movie in data.get("movies")],
-            body=data.get("body")
+            body=data.get("body"),
+            upvotes_count=data.get("upvotes_count"),
         )
+
+# TODO: add RecommendationReason

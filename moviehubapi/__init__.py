@@ -104,16 +104,19 @@ class Moviehub(object):
             )
 
         return models.Movie.from_dict(json.loads(movie_data))
-        #http = httplib2.Http()
-        #response, content = http.request("http://localhost:8081/api/movies/%d/" % id)
-        #response, content = http.request("https://3.movie-hub.appspot.com/api/movies/%d/" % id)
-        #return models.Movie.from_dict(json.loads(content))
 
-    def recent_movies(self, limit=10):
-        http = httplib2.Http()
-        #response, content = http.request("http://localhost:8080/api/movies/1/")
-        response, content = http.request("https://3.movie-hub.appspot.com/api/latest_movies/")
-        return content
+    def movies(self, limit=100):
+        """
+        Get all movies from the API
+        """
+        response, movies_data = self._request("/movies/")
+        if not response.status == 200:
+            error_data = json.loads(movie_data).get("error")
+            raise exceptions.MoviehubApiError(
+                type=error_data.get("type"),
+                message=error_data.get("message")
+            )
+        return [models.Movie.from_dict(movie) for movie in json.loads(movies_data)]
 
     def recommendations(self, movie_id):
         response, content = self._request("/movies/%d/recommendations/" % movie_id)
@@ -128,7 +131,7 @@ class Moviehub(object):
 
     def add_recommendation_review(self, movie_ids, rating, body):
         recommendation_data = {"movie_ids": movie_ids, "rating": rating, "body": body}
-        response, content = self._request("/reviews/", method="POST", body=recommendation_data)
+        response, content = self._request("/reasons/", method="POST", body=recommendation_data)
 
         return content
         #return models.Recommendation.from_dict(json.loads(content))
