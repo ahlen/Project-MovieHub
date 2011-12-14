@@ -103,7 +103,9 @@ def check_like_movie(id):
     =========
     :param      id      id of the movie that should be liked
     """
-    like = Movie.gql("WHERE id = :1 AND likes = :2", id, g.api_user).get()
+
+    #like = Movie.gql("WHERE id = :1 AND likes = :2", id, g.api_user).get()
+    like = g.api_user.key() in Movie.get_by_id(id).likes
     if like:
         return "true"
     return "false"
@@ -130,12 +132,14 @@ def like_movie(id):
             if not g.api_user.key() in movie.likes:
                 movie.likes.append(g.api_user.key())
                 movie.put()
+                return "true"
         else:
             movie.likes.remove(g.api_user.key())
             movie.put()
+            return "true"
     except ValueError:
         return get_error_response(
             message="User does not like this movie",
             status_code=400
         )
-    return "true"
+    return "false"

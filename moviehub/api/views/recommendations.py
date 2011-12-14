@@ -274,7 +274,17 @@ def get_recommendations(movie_id):
 @api.route("/api/reasons/<int:id>/")
 @api.require_client
 def get_reason(id):
-    return json.dumps(RecommendationReason.get_by_id(id).to_dict())
+    """
+    return a reason by id
+    """
+    reason = RecommendationReason.get_by_id(id)
+    if not reason:
+        return get_error_response(
+            message="Resource not found",
+            status_code=404
+        )
+
+    return json.dumps(reason.to_dict())
 
 
 @api.route("/api/recommendations/exists/")

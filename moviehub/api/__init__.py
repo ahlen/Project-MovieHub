@@ -79,4 +79,5 @@ def set_client_and_user_access():
 
     token = request.headers.get("token", None) or request.args.get("token", None)
     if token and token == "abc":
+        # todo: sett current client from current access_token
         g.api_user = User.all().get()

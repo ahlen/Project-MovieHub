@@ -25,16 +25,36 @@ def show_movie(id):
                     body=form.reason.data,
                     rating=form.rating.data,
                 )
-                return redirect(url_for("frontend.show_movie", id=id))
+
             except exceptions.MoviehubApiError as ex:
                 flash(ex.message, "error")
+            finally:
+                return redirect(url_for("frontend.show_movie", id=id))
 
         movie = moviehub.movie(id)
         recommendations = moviehub.recommendations(id)
     except exceptions.MoviehubApiError as ex:
         return "%s: %s" % (ex.type, ex.message)
 
-    return render_template("movies/show.html", movie=movie, recommendations=recommendations, form=form)
+    return render_template("movies/show.html",
+        movie=movie,
+        recommendations=recommendations,
+        form=form,
+        like_movie=moviehub.check_like_movie(id)
+    )
+
+@frontend.route("/movies/<int:id>/like/", methods=["POST"])
+def movie_like(id):
+    movie = moviehub.movie(id)
+    if not movie:
+        flash("Movie doesn't exists", "error")
+        return redirect("/movies/")
+
+    if moviehub.check_like_movie(id):
+        moviehub.remove_like_movie(id)
+    else:
+        moviehub.like_movie(id)
+    return redirect(url_for("frontend.show_movie", id=id))
 
 @frontend.route("/_/movies/all/")
 def get_modal_movies():

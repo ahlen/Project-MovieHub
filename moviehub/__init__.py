@@ -140,7 +140,7 @@ def request_token():
     #return json.dumps(data)
 
 @app.route("/_data/add/")
-def add_sample_data():
+def add_sample_data_old():
     from moviehub.core.models import Movie, Client
     #from moviehub.core.models import Review
     from google.appengine.ext import db
@@ -184,7 +184,7 @@ def add_sample_data():
     #for m in movies:
     #    m.put()
 
-@app.route("/_data/add/movies")
+@app.route("/_data/add/movies/")
 def add_sample_data():
     from moviehub.core.models import Movie
     from moviehubapi import Moviehub
@@ -290,11 +290,15 @@ def add_sample_data():
         Movie(title="Crash", imdb_id="tt0375679"),
         Movie(title="Avatar", imdb_id="tt0499549"),
         Movie(title="The Smurfs", imdb_id="tt0472181"),
-
     ]
 
-    #for m in movies:
-        #m.put()
+    for m in movies:
+        m.put()
 
-    p = Moviehub(client_id="1", client_secret="1", access_token="abc");
-    p.add_recommendation_review(movies=movies[0].id()+","+movies[1].id(), body="test", rating=70)
+    #p = Moviehub(client_id="1", client_secret="1", access_token="abc");
+
+    #movies = p.movies()
+
+    #p.add_reason(movie_ids="%d,%d" % (movies[0].id,movies[1].id), body="test", rating=70)
+
+    return "Hello"

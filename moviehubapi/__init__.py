@@ -72,6 +72,46 @@ class Moviehub(object):
 
         return models.Movie.from_dict(json.loads(content))
 
+    def like_movie(self, id):
+        """
+        do so the current user like the movie
+
+        return true if success, otherwise false
+        """
+        self.require_access_token()
+
+        response, content = self._user_request("/movies/%d/like/" % id, method="POST")
+        if not response.status == 200:
+            self._handle_error(content)
+        if content == "true":
+            return True
+        return False
+
+    def remove_like_movie(self, id):
+        """
+        do so the current user like the movie
+
+        return true if success, otherwise false
+        """
+        self.require_access_token()
+
+        response, content = self._user_request("/movies/%d/like/" % id, method="DELETE")
+        if not response.status == 200:
+            self._handle_error(content)
+        if content == "true":
+            return True
+        return False
+
+    def check_like_movie(self, id):
+        """
+        check if current user like the movie
+        """
+        self.require_access_token()
+        response, content = self._user_request("/movies/%d/like/" % id)
+        if content == "true":
+            return True
+        return False
+
     # recommendations/reasons
     # =======================
 
@@ -136,8 +176,11 @@ class Moviehub(object):
         return response, content
 
     def _handle_error(self, data):
-        error_data = json.loads(data).get("error")
-        raise exceptions.MoviehubApiError(
-            type=error_data.get("type"),
-            message=error_data.get("message")
-        )
+        try:
+            error_data = json.loads(data).get("error")
+            raise exceptions.MoviehubApiError(
+                type=error_data.get("type"),
+                message=error_data.get("message")
+            )
+        except Exception as ex:
+            raise exceptions.MoviehubApiError("MoviehubApiError", data)
