@@ -88,10 +88,16 @@ class Movie(db.Model):
             from moviehub.api import tmdb
             tmdb_data = tmdb.extract_movie_data(self.imdb_id)
 
-            movie.update(
-                image_url=tmdb_data.get("image_url", ""),
-                description=tmdb_data.get("description", "")
-            )
+            if tmdb_data:
+                movie.update(
+                    image_url=tmdb_data.get("image_url", ""),
+                    description=tmdb_data.get("description", "")
+                )
+            else:
+                movie.update(
+                    image_url="",
+                    description=""
+                )
         return movie
 
 class Recommendation(db.Model):

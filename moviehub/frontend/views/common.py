@@ -16,3 +16,7 @@ def index():
     movies = []#Movie.get_movies()
 
     return render_template("base.html", movies=movies)
+
+@frontend.route("/dev/api/")
+def documentation():
+    return render_template("/documentation/api.html")

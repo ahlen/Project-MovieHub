@@ -36,17 +36,50 @@ def get_all_movies():
 
     get data
     ========
-    :param      include_remote      When set to true, the lists
+    :param      include_remote      (optional) When set to true, the lists
                                     contains image_url and description
                                     if available from TMDb
+
+    :param      limit               (optional) limit can be a positive integer
+                                    without limit set, all data is loaded
+
+    :param      only_ids            (optional) when only_ids is set the list of movies
+                                    contains ids
     """
 
+    limit = request.args.get("limit", None)
+    include_remote = request.args.get("include_remote", False)
+    only_ids = request.args.get("only_ids", False)
+
+    if include_remote and include_remote == "true":
+        include_remote = True
+    else:
+        include_remote = False
+
+    if only_ids and only_ids == "true":
+        only_ids = True
+    else:
+        only_ids = False
+
+    if limit:
+        try:
+            limit = int(limit)
+
+            if limit < 1:
+                raise ValueError
+        except (TypeError, ValueError):
+            return get_error_response(
+                message="optional parameter limit requires a positive integer",
+                status_code=400
+            )
 
 
     movies = Movie.all().order("title")
+    if limit:
+        movies = movies.fetch(limit=limit)
 
     return json_result(
-        json.dumps([movie.to_dict() for movie in movies])
+        json.dumps([movie.to_dict(movie, include_remote=include_remote, only_id=only_ids) for movie in movies])
     )
 
 

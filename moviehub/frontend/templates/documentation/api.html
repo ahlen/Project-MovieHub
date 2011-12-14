@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="row">
+        <div class="span16">
+            <h1>API Documentation</h1>
+            [Intoduction and information about the API]
+        </div>
+    </div>
+    <div class="row">
+        <div class="span16">
+            <ul>
+                <li><a href="#movies">Movies</a></li>
+                <li><a href="#recommendations">Recommendations</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span16">
+            <h2>Movies</h2>
+
+            <div class="row">
+                <div class="span16">
+                    <table class="zebra-striped">
+                        <thead>
+                        <tr>
+                            <th style="width: 300px;">Resource</th>
+                            <th>Usage</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
+                                GET /api/movies/<br>
+                            </td>
+                            <td>
+                                <p>
+                                    Used to get a list of all movies.
+                                </p>
+                                <h3>Parameters</h3>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>only_ids</strong><br/>
+                                            optional
+                                        </td>
+                                        <td>
+                                            when only_ids is set to <em>true</em> each movie in the list contains only
+                                            an id
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>include_remote</strong><br/>
+                                            optional
+                                        </td>
+                                        <td>
+                                            When set to <em>true</em>, the lists contains image_url and description if
+                                            available from TMDb
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>limit</strong><br/>
+                                            optional
+                                        </td>
+                                        <td>
+                                            limit can be a positive integer and without limit set, all data is loaded
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                POST /api/movies/{id}/like/<br>
+                                <span class="label notice">Require user access</span>
+                            </td>
+                            <td>
+                                <p>
+                                    Used to like a movie as the current user
+                                </p>
+                                <h3>Parameters</h3>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>id</strong><br>
+                                            required
+                                        </td>
+                                        <td>
+                                            id should be an existing id to a movie
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                DELETE /api/movies/{id}/like/<br>
+                                <span class="label notice">Require user access</span>
+                            </td>
+                            <td>
+                                <p>
+                                    Used to remove liked movie from the current user
+                                </p>
+                                <h3>Parameters</h3>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>id</strong><br>
+                                            required
+                                        </td>
+                                        <td>
+                                            id should be an existing id to a movie
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="span16">
+            <h2>Recommendations</h2>
+        </div>
+    </div>
+{% endblock %}
