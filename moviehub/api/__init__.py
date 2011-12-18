@@ -3,7 +3,7 @@ from functools import wraps
 import json
 from flask import Blueprint, g, request
 from moviehub.api.utils import get_error_response
-from moviehub.core.models import Client, User
+from moviehub.core.models import Client, User, AuthToken
 from oauth2client.client import OAuth2WebServerFlow
 
 try:
@@ -49,7 +49,7 @@ class ApiBlueprint(Blueprint):
             client_id=settings.GOOGLE_OAUTH2_ID,#"",#app.config.GOOGLE_OAUTH2_ID,
             client_secret=settings.GOOGLE_OAUTH2_SECRET,#"",#app.config.GOOGLE_OAUTH2_SECRET,
             scope = "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
-            redirect_uri="https://movie-hub.appspot.com/oauth2callback",
+            redirect_uri="https://movie-hub.appspot.com/oauth2callback/",
         )
         return oauth
 
@@ -72,12 +72,16 @@ def set_client_and_user_access():
     client_secret = request.headers.get("client_secret", None) or request.args.get("client_secret", None)
 
     if client_id and client_secret:
-        client = True
+        client = Client.get_by_id(int(client_id))
         #client = Client.gql("WHERE id = :1 AND client_secret = :2", client_id, client_secret).get()
-        if client:
-            g.api_client = Client.all().get()
+        if client and client.secret == client_secret:
+            g.api_client = client
 
     token = request.headers.get("token", None) or request.args.get("token", None)
-    if token and token == "abc":
-        # todo: sett current client from current access_token
-        g.api_user = User.all().get()
+    if token:
+        t = AuthToken.gql("WHERE token = :1", token).get()
+
+        if t:
+            g.api_client = t.client
+            g.api_user = t.user
+        #g.api_user = User.get_by_id(267)

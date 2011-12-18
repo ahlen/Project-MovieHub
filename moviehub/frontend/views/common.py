@@ -1,21 +1,30 @@
 # -*- coding: utf-8 -*-
-from flask import render_template, request
-from flask.helpers import url_for
+from flask import render_template, request, session, redirect
 
-from moviehub.frontend import frontend
-from werkzeug.utils import redirect
+from moviehub.frontend import frontend, moviehub
 
-from wtforms import Form, TextField, validators
+#@frontend.route("/")
+#def index():
+#    return render_template("common/index.html")
+from moviehub.frontend.utils import login_required
 
-from moviehubapi import Moviehub, models, exceptions
+@frontend.route("/auth/")
+def auth_code():
+    if request.args.get("code"):
+        token = moviehub.auth_exchange_token(request.args.get("code"))
+        session["user_token"] = token
+    return redirect("/")
 
-@frontend.route("/")
-def index():
+@frontend.route("/login/")
+def login():
+    return redirect(moviehub.auth_code_url())
 
-    from moviehub.core.models import Movie
-    movies = []#Movie.get_movies()
-
-    return render_template("base.html", movies=movies)
+@frontend.route("/logout/")
+@login_required
+def logout():
+    if "user_token" in session:
+        session.pop("user_token", None)
+    return redirect("/")
 
 @frontend.route("/dev/api/")
 def documentation():

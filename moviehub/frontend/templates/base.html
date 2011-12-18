@@ -4,7 +4,8 @@
     <title>Moviehub</title>
 
     <link rel="stylesheet" href="/stylesheets/moviehub.css" type="text/css">
-    <link href="http://fonts.googleapis.com/css?family=Droid+Sans:400,700|Luckiest+Guy" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Droid+Sans:400,700|Luckiest+Guy" rel="stylesheet"
+          type="text/css">
 
     <script type="text/javascript" src="/js/jquery-1.7.1.min.js"></script>
     <script type="text/javascript" src="/js/bootstrap-modal.js"></script>
@@ -13,25 +14,44 @@
     {% endblock %}
 </head>
 <body>
-    <div class="container">
-        <div id="header">
-            <h1><a href="/">Moviehub</a></h1>
+<div class="container">
+    <div id="header">
+        <h1><a href="/">Moviehub</a></h1>
 
-            <div id="search">
-                <form action="/search/" style="margin: 0; padding: 0;">
-                    <input type="text" name="q" id="q" class="xlarge">
-                </form>
-            </div>
-            
-            <ul>
-                <li style="float: right;"><a style="padding-right: 0;" href="/login/">Login</a> </li>
-                <li><a href="/movies/">Browse</a></li>
-                <li><a href="/browse/">Suggestions</a></li>
-                <li><a href="/me/">Profile</a></li>
-            </ul>
+        <div id="search">
+            <form action="/search/" style="margin: 0; padding: 0;">
+                <input type="text" disabled="disabled" name="q" id="q" class="xlarge"
+                       placeholder="no full text search :(">
+            </form>
         </div>
-        
-        <!-- content -->
+
+        <ul>
+            {% if user %}
+                <li style="float: right;"><a style="padding-right: 0;" href="/logout/">Logout ({{ moviehub.me().full_name }})</a></li>
+                <li><a href="/movies/">Browse</a></li>
+                <li><a href="/me/">Profile</a></li>
+            {% else %}
+                <li style="float: right;"><a style="padding-right: 0;" href="/login/">Login</a></li>
+                <li><a href="/movies/">Browse</a></li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- content -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="row">
+            <div class="span16">
+            {% for category, message in messages %}
+                <div class="alert-message {{ category }}"><p>{{ message }}</p></div>
+            {% endfor %}
+            </div>
+            </div>
+        {% endif %}
+    {% endwith %}
+
+
         {% block content %}
             <div id="row">
                 <div class="span16">
@@ -40,18 +60,18 @@
             </div>
         {% endblock %}
 
-        <div id="row">
+        <div id="footer" class="row">
             <div class="span16">
-                <ul>
-                {% for movie in movies %}
-                    <li>
-                        {{ movie.title }} ({{ movie.imdb_id }})
-                    </li>
-                {% endfor %}
-                </ul>
+                <div style="margin-top: 10px; padding: 10px 0; border-top: solid 1px #e4e4e4;">
+                    Copyright &copy; Moviehub with data from <a href="http://www.themoviedb.org/">TMDb</a>
+                    {% if user %}
+                       | {{ session["user_token"] }}
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
+
     {% block ending %}
     {% endblock %}
 </body>

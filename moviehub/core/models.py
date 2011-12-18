@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import hashlib
 
 from google.appengine.ext import db
 
@@ -48,7 +49,6 @@ class Client(db.Model):
         """
         Generate secret for the client should use as the API identifier.
         """
-        import hashlib
         h = hashlib.new("sha1")
         h.update("%s:%s:%s" % (self.redirect_uri, self.created_at.isoformat(), self.name))
 
@@ -61,18 +61,66 @@ class Client(db.Model):
             redirect_uri=self.redirect_uri
         )
 
-class TestArticle(db.Model):
-    title = db.StringProperty(required=True)
-    content = db.TextProperty()
-    created_at = db.DateTimeProperty(auto_now_add=True)
+class AuthToken(db.Model):
+    """
+    user token that lives forever
+    """
 
-    def to_dict(self):
-        return dict(
-            id=self.key().id(),
-            title=self.title,
-            content=self.content,
-            created_at=self.created_at.isoformat()
+    user = db.ReferenceProperty(User)
+    client = db.ReferenceProperty(Client)
+    token = db.StringProperty()
+
+    @classmethod
+    def generate_token(cls, user, client):
+        t = AuthToken.gql("WHERE user = :1 AND client = :2", user.key(), client.key()).get()
+        if t:
+            t.generate_new_token()
+            t.put()
+            return t
+
+        t = AuthToken(
+            user=user,
+            client=client
         )
+        t.generate_new_token()
+        t.put()
+        return t
+
+
+    def generate_new_token(self):
+        h = hashlib.new("sha1")
+        h.update("%s:%s:%s" % (self.client.key().id(), self.user.key().id(), datetime.datetime.utcnow().isoformat()))
+        self.token = h.hexdigest()
+
+class AuthCode(db.Model):
+    """
+    user code that is used to redeem auth token
+    """
+    user = db.ReferenceProperty(User)
+    client = db.ReferenceProperty(Client)
+    code = db.StringProperty()
+
+    @classmethod
+    def generate_code(cls, user, client):
+        ac = AuthCode.gql("WHERE user = :1 AND client = :2", user.key(), client.key()).get()
+        if ac:
+            ac.generate_new_code()
+            ac.put()
+            return ac
+
+        ac = AuthCode(
+            user=user,
+            client=client
+        )
+        ac.generate_new_code()
+        ac.put()
+        return ac
+
+    def generate_new_code(self):
+        h = hashlib.new("sha1")
+        h.update("%s:%s:%s" % (self.client.key().id(), self.user.key().id(), datetime.datetime.utcnow().isoformat()))
+        self.code = h.hexdigest()
+
 
 class Movie(db.Model):
     title = db.StringProperty(required=True)
@@ -125,7 +173,7 @@ class Recommendation(db.Model):
     def top_reasons(self, *args, **kwargs):
         limit = max(min(kwargs.get("limit", 10), 10), 1)
 
-        return RecommendationReason.all().filter("recommendation=", self.key()).order("score").fetch(limit=limit)
+        return RecommendationReason.all().filter("recommendation = ", self).order("score").fetch(limit=limit)
 
     def to_dict(self, *args, **kwargs):
         if kwargs.get("only_id", False):
@@ -145,15 +193,15 @@ class Recommendation(db.Model):
             )
 
         if kwargs.get("include_top_reasons", False):
-            reasons_count = max(min(kwargs.get("reasons_count", 10), 1))
+            reasons_count = max(min(kwargs.get("reasons_count", 10), 10), 1)
             recommendation.update(
-                reasons=self.top_reasons(limit=reasons_count)
+                reasons=[reason.to_dict() for reason in self.top_reasons(limit=reasons_count)]
             )
 
         return recommendation
 
 class RecommendationReason(db.Model):
-    recommendation = db.ReferenceProperty(Recommendation, required=True)
+    recommendation = db.ReferenceProperty(Recommendation, required=True, collection_name="reasons")
     author = db.ReferenceProperty(User, collection_name="recommendation_reasons", required=True)
     rating = db.RatingProperty(required=True)
     score = db.FloatProperty(default=0.0)

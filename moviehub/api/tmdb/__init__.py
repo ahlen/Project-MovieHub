@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
 import httplib2
 import json
+from google.appengine.api import memcache
 from moviehub.api import api
 
-# http://api.themoviedb.org/2.1/Movie.imdbLookup/en/json/a314e35b02e9cad181b1f37c96989b95/tt0137523
-url = "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/json/a314e35b02e9cad181b1f37c96989b95/tt1340800"
 
-http = httplib2.Http()
-response, content = http.request(url)
-
-in_dict = json.loads(content)[0]
 
 def extract_movie_data(imdb_id):
     """
@@ -19,7 +14,11 @@ def extract_movie_data(imdb_id):
     we simply return a dict with blank values in image_url and description.
     """
 
-    # TODO: add caching!
+    cache_key = "tmdb:%s" % imdb_id
+
+    movie_cache = memcache.get(cache_key)
+    if movie_cache:
+        return movie_cache
 
     url = "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/json/%s/%s" % (api.tmdb_api_key, imdb_id)
 
@@ -31,10 +30,12 @@ def extract_movie_data(imdb_id):
     # we can't check the status code because they're sending 200 even
     # if no movie exists
     if movie_data[0] == "Nothing found.":
-        return dict(
+        movie = dict(
             image_url="",
             description="",
         )
+        memcache.set(cache_key, movie)
+        return movie
 
     movie = dict()
 
@@ -46,6 +47,7 @@ def extract_movie_data(imdb_id):
             image = img.get("image")
             if image.get("size") == "cover":
                 movie.update(image_url=image.get("url"))
+                memcache.set(cache_key, movie)
                 return movie
     except:
         # return same result as when the movie doesn't exist in their db

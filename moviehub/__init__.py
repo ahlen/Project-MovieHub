@@ -6,7 +6,7 @@ import httplib2
 from apiclient.discovery import build
 from flask.globals import g
 
-from moviehub.core.models import User
+from moviehub.core.models import User, Client, AuthToken
 import json
 
 from oauth2client.client import OAuth2WebServerFlow, FlowExchangeError
@@ -184,7 +184,7 @@ def add_sample_data_old():
     #for m in movies:
     #    m.put()
 
-@app.route("/_data/add/movies/")
+@app.route("/_data/add/movies/old/")
 def add_sample_data():
     from moviehub.core.models import Movie
     from moviehubapi import Moviehub
@@ -302,3 +302,54 @@ def add_sample_data():
     #p.add_reason(movie_ids="%d,%d" % (movies[0].id,movies[1].id), body="test", rating=70)
 
     return "Hello"
+
+@app.route("/_data/add_fake_users/")
+def add_fake_users():
+    users = [
+        User(email="mikaelahlen+1@gmail.com",
+            full_name="Mikael Demo",
+            photo_url="https://lh4.googleusercontent.com/-kPBDOS79uEk/AAAAAAAAAAI/AAAAAAAAAC4/N23-_zPoMMg/photo.jpg",
+            google_id="111331274520904684671",
+            access_token="ya29.AHES6ZStvSU0dsoexKVyMGVvTcWiB6O1cPhpU4gBqWk5t2F2o1Xr",
+            refresh_token="1/E2w6hL8_GPKaMJ6A3Mem7dyK1Sfco2YrL3sKuBcInFk",
+        ),
+        User(email="mikaelahlen+2@gmail.com",
+            full_name="Edvin Demo",
+            photo_url="https://lh4.googleusercontent.com/-kPBDOS79uEk/AAAAAAAAAAI/AAAAAAAAAC4/N23-_zPoMMg/photo.jpg",
+            google_id="111331274520904684672",
+            access_token="ya29.AHES6ZStvSU0dsoexKVyMGVvTcWiB6O1cPhpU4gBqWk5t2F2o1Xr",
+            refresh_token="1/E2w6hL8_GPKaMJ6A3Mem7dyK1Sfco2YrL3sKuBcInFk",
+        ),
+        User(email="mikael.ahlen+1@gmail.com",
+            full_name="M7011E-Demo",
+            photo_url="https://lh4.googleusercontent.com/-kPBDOS79uEk/AAAAAAAAAAI/AAAAAAAAAC4/N23-_zPoMMg/photo.jpg",
+            google_id="111331274520904684673",
+            access_token="ya29.AHES6ZStvSU0dsoexKVyMGVvTcWiB6O1cPhpU4gBqWk5t2F2o1Xr",
+            refresh_token="1/E2w6hL8_GPKaMJ6A3Mem7dyK1Sfco2YrL3sKuBcInFk",
+        )
+    ]
+    from google.appengine.ext import db
+    db.put(users)
+    output = ""
+    output += "created demo users\n"
+
+    client = Client.all().get()
+    if client:
+        for u in users:
+            token = AuthToken.generate_token(u, client)
+        output += "added tokens"
+    else:
+        output += "missing client, could not create tokens"
+
+    return output
+
+@app.route("/_data/add/trusted_client/")
+def add_trusted_client():
+    client = Client(redirect_uri="https://movie-hub.appspot.com/auth/", name="Moviehub", trusted=True, user=User.all().get())
+    client.generate_secret()
+    client.put()
+
+    for u in User.all():
+        AuthToken.generate_token(u, client)
+
+    return str(client.key().id())

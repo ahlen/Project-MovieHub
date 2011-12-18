@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import render_template, request, jsonify, flash
+from flask import render_template, request, jsonify, flash, g
 from flask.helpers import url_for
 
 import json
@@ -13,11 +13,13 @@ from wtforms import Form, TextField, validators
 
 from moviehubapi import Moviehub, models, exceptions
 
+from moviehub.frontend.utils import login_required
+
 @frontend.route("/movies/<int:id>/", methods=["GET", "POST"])
 def show_movie(id):
     form = RecommendationForm(request.form)
     try:
-        if request.method == "POST" and form.validate():
+        if request.method == "POST" and form.validate() and g.user:
             movies = "%d,%d" % (id, form.target_id.data)
             try:
                 reason = moviehub.add_reason(
@@ -40,21 +42,30 @@ def show_movie(id):
         movie=movie,
         recommendations=recommendations,
         form=form,
-        like_movie=moviehub.check_like_movie(id)
     )
 
 @frontend.route("/movies/<int:id>/like/", methods=["POST"])
+@login_required
 def movie_like(id):
     movie = moviehub.movie(id)
     if not movie:
         flash("Movie doesn't exists", "error")
         return redirect("/movies/")
 
-    if moviehub.check_like_movie(id):
-        moviehub.remove_like_movie(id)
-    else:
-        moviehub.like_movie(id)
+    try:
+        if moviehub.check_like_movie(id):
+            moviehub.remove_like_movie(id)
+        else:
+            moviehub.like_movie(id)
+    except Exception as ex:
+        flash("Couldn't like or unlike the movie", "error")
     return redirect(url_for("frontend.show_movie", id=id))
+
+@frontend.route("/")
+@frontend.route("/movies/")
+def movies():
+    movies = moviehub.movies(include_remote=True)
+    return render_template("movies/browse.html", movies=movies)
 
 @frontend.route("/_/movies/all/")
 def get_modal_movies():

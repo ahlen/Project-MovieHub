@@ -15,16 +15,26 @@ class Moviehub(object):
     """
 
     # TODO: just for dev. we need to use localhost...
-    if os.environ['SERVER_SOFTWARE'].startswith('Development'):
-        API_URL = "http://localhost:8081/api"
-    else:
-        API_URL = "https://movie-hub.appspot.com/api/"
+    #if os.environ['SERVER_SOFTWARE'].startswith('Development'):
+    API_URL = "http://localhost:8081/api"
+    #else:
+    #API_URL = "http://movie-hub.appspot.com/api"
 
     def __init__(self, client_id, client_secret, redirect_uri=None, access_token=None):
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
         self.access_token = access_token
+
+    def auth_code_url(self):
+        return self.API_URL + "/auth/?response_type=code&client_id=%s" % self.client_id
+
+    def auth_exchange_token(self, code):
+        response, content = self._request("/auth/?response_type=token&client_id=%s&client_secret=%s&code=%s" % (
+            self.client_id, self.client_secret, code), method="POST")
+        if not response.status == 200:
+            raise Exception(content)
+        return content
 
     # decorator to DRY the logic to check if
     # the endpoint require "client with user access"
@@ -42,22 +52,31 @@ class Moviehub(object):
         response, content = self._client_request("/info/")
         if not response.status == 200:
             self._handle_error(content)
+        return models.Client.from_dict(json.loads(content))
 
     # profiles
     # ========
     def me(self):
         self.require_access_token()
+        response, content = self._user_request("/me/")
+        if not response.status == 200:
+            self._handle_error(content)
+        return models.User.from_dict(json.loads(content))
 
-        pass
 
     # movies
     # ======
 
-    def movies(self):
+    def movies(self, include_remote=False):
         """
         return a list of all movies within from moviehub
         """
-        response, content = self._client_request("/movies/")
+
+        endpoint = "/movies/"
+        if include_remote:
+            endpoint += "?include_remote=true"
+
+        response, content = self._client_request(endpoint)
         if not response.status == 200:
             self._handle_error(content)
         return [models.Movie.from_dict(movie) for movie in json.loads(content)]
@@ -124,6 +143,15 @@ class Moviehub(object):
             self._handle_error(content)
         return [models.Recommendation.from_dict(r) for r in json.loads(content)]
 
+    def recommendation(self, id):
+        """
+        get a recommendation by id
+        """
+        response, content = self._client_request("/recommendations/%d/" % id)
+        if not response.status == 200:
+            self._handle_error(content)
+        return models.Recommendation.from_dict(json.loads(content))
+
     def add_reason(self, movie_ids, rating, body):
         """
         add a new reason for a movie
@@ -137,6 +165,56 @@ class Moviehub(object):
             self._handle_error(content)
 
         return models.Reason.from_dict(json.loads(content))
+
+    def reasons(self, recommendation_id):
+        """
+        get all reasons by recommendation id
+        """
+        response, content = self._client_request("/recommendations/%d/reasons/" % recommendation_id)
+        if not response.status == 200:
+            self._handle_error(content)
+        return [models.Reason.from_dict(r) for r in json.loads(content)]
+
+    def check_reason_vote(self, reason_id):
+        """
+        check if current user have voted on reason
+        """
+
+        self.require_access_token()
+        response, content = self._user_request("/reasons/%d/vote/" % reason_id)
+
+        if response.status == 404:
+            return None
+        if not response.status == 200:
+            self._handle_error(content)
+
+        return models.ReasonVote.from_dict(json.loads(content))
+
+    def reason_vote(self, reason_id, vote_type):
+        if not vote_type in ("up", "down"):
+            return exceptions.MoviehubApiError(message="Vote requires either up or down", type="")
+
+        self.require_access_token()
+        response, content = self._user_request("/reasons/%d/vote/" % reason_id, method="POST", body={"vote": vote_type})
+
+        if response.status == 404:
+            return None
+        if not response.status == 200:
+            self._handle_error(content)
+
+        return models.ReasonVote.from_dict(json.loads(content))
+
+    def remove_reason_vote(self, reason_id):
+        self.require_access_token()
+        response, content = self._user_request("/reasons/%d/vote/" % reason_id, method="DELETE")
+
+        if response.status == 404:
+            return None
+        if not response.status == 200:
+            self._handle_error(content)
+
+        return models.ReasonVote.from_dict(json.loads(content))
+
 
     # internal helpers
     # ================
@@ -170,17 +248,14 @@ class Moviehub(object):
         if body:
             # thanks to http://stackoverflow.com/a/788055
             body=urllib.urlencode(dict([k, v.encode('utf-8')] for k, v in body.items()))
-            #body=urllib.urlencode(body)
         response, content = http.request(self.API_URL + endpoint, method=method, headers=headers, body=body)
 
         return response, content
 
     def _handle_error(self, data):
-        try:
-            error_data = json.loads(data).get("error")
-            raise exceptions.MoviehubApiError(
-                type=error_data.get("type"),
-                message=error_data.get("message")
-            )
-        except Exception as ex:
-            raise exceptions.MoviehubApiError("MoviehubApiError", data)
+        error_data = json.loads(data).get("error")
+        raise exceptions.MoviehubApiError(
+            type=error_data.get("type"),
+            message=error_data.get("message")
+        )
+

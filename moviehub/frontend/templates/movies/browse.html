@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="span16">
+        <ul style="margin: 0; padding: 0; list-style: none;">
+        {% for movie in movies %}
+           <li style="width: 178px; margin: 0 5px 10px 5px;float: left;">
+               <div style="width: 178px; height: 240px; background: #e4e4e4 url({{ movie.image_url }}) center center;">
+                <a style="display: block; height: 240px;" href="{{ url_for("frontend.show_movie", id=movie.id) }}">
+
+                </a>
+               </div>
+           </li>
+        {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

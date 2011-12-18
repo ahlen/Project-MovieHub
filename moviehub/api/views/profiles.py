@@ -7,6 +7,7 @@ from moviehub.api import api
 from moviehub.api.utils import get_error_response
 
 @api.route("/api/me/")
+@api.require_user
 def me():
     return json.dumps(g.api_user.to_dict())
 

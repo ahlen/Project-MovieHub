@@ -25,3 +25,19 @@ indexes:
   properties:
   - name: source
   - name: rating
+
+- kind: RecommendationReason
+  properties:
+  - name: recommendation
+  - name: score
+
+- kind: RecommendationReason
+  properties:
+  - name: recommendation
+  - name: score
+    direction: desc
+
+- kind: RecommendationReason
+  properties:
+  - name: recommendation=
+  - name: score

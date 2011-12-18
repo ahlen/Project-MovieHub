@@ -689,7 +689,7 @@ class OAuth2WebServerFlow(Flow):
         'client_id': self.client_id,
         'client_secret': self.client_secret,
         'code': code,
-        'redirect_uri': self.redirect_uri,
+        'redirect_uri': "https://movie-hub.appspot.com/oauth2callback/", #self.redirect_uri,
         'scope': self.scope,
         })
     headers = {

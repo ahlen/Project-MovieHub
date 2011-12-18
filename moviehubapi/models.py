@@ -79,11 +79,12 @@ class Recommendation(object):
         )
 
 class Reason(object):
-    def __init__(self, id, recommendation, author, body, upvotes_count, created_at, updated_at):
+    def __init__(self, id, recommendation, author, body, rating, upvotes_count, created_at, updated_at):
         self.id = id
         self.recommendation = recommendation
         self.author = author
         self.body = body
+        self.rating = rating
         self.upvotes_count = int(upvotes_count)
         self.created_at = datetime.datetime.strptime(created_at[0:19], "%Y-%m-%dT%H:%M:%S")
         self.updated_at = datetime.datetime.strptime(updated_at[0:19], "%Y-%m-%dT%H:%M:%S")
@@ -95,7 +96,24 @@ class Reason(object):
             recommendation=Recommendation.from_dict(data.get("recommendation")),
             author=User.from_dict(data.get("author")),
             body=data.get("body"),
+            rating=data.get("rating"),
             upvotes_count=data.get("upvotes_count"),
             created_at=data.get("created_at"),
             updated_at=data.get("updated_at")
+        )
+
+class ReasonVote(object):
+    def __init__(self, id, reason, author, vote):
+        self.id = id
+        self.reason = reason
+        self.author = author
+        self.vote = vote
+
+    @classmethod
+    def from_dict(cls, data):
+        return ReasonVote(
+            id=data.get("id"),
+            reason=Reason.from_dict(data.get("recommendation_reason")),
+            author=User.from_dict(data.get("author")),
+            vote=data.get("vote")
         )

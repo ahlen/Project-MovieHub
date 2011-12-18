@@ -1,42 +1,171 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="row">
-    <div class="span12">
-        <div class="row">
-            <div class="span12">
-                <h1>Relationship</h1>
+    <!--<div class="row">
+        <div class="span12">
+            <div class="row">
+                <div class="span12">
+                    <h1>Relationship</h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span3">
+                    <h1 style="margin-bottom: 5px;">Oldboy</h1>
+                </div>
+                <div class="span3 offset6">
+                    <h1 style="margin-bottom: 5px;">Akira</h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span3">
+                    <img src="http://cf2.imgobject.com/t/p/w185/4S0GCbBgkbbDxEQ9CsMVOFxpyzr.jpg" alt=""
+                         style="height: 250px; display: block;">
+                </div>
+                <div class="span6">
+                    <h3>Hand in hand!</h3>
+
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod
+                        tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis
+                        nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+                        Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel
+                        illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui
+                        blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
+                    </p>
+                </div>
+                <div class="span3">
+                    <img src="http://cf2.imgobject.com/t/p/w185/bIT9WbeTLbZrtU1CutDEHbWCe5G.jpg" alt=""
+                         style="height: 250px; display: block;">
+                </div>
+            </div>
+            <div class="row">
+                <div class="span3 offset3">
+                    <h2>Grade:
+                        <button id="rating" class="btn info">9.2</button>
+                    </h2>
+                </div>
+                <div class="span6">
+                    <h2>Vote:
+                        <button id="upvote_recommendation_btn" class="btn success">+</button>
+                        <button id="downvote_recommendation_btn" class="btn danger">-</button>
+                    </h2>
+                </div>
             </div>
         </div>
-        <div class="row">
-            <div class="span3">
-                <h1 style="margin-bottom: 5px;">Oldboy</h1>
-            </div>
-            <div class="span3 offset6">
-                <h1 style="margin-bottom: 5px;">Akira</h1>
-            </div>
-        </div>
-        <div class="row">
-            <div class="span3">
-                <img src="http://cf2.imgobject.com/t/p/w185/4S0GCbBgkbbDxEQ9CsMVOFxpyzr.jpg" alt="" style="height: 250px; display: block;">
-            </div>
-            <div class="span6">
-                <h3>Hand in hand!</h3>
-                <p>
-                    Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
-                </p>
-            </div>
-            <div class="span3">
-                <img src="http://cf2.imgobject.com/t/p/w185/bIT9WbeTLbZrtU1CutDEHbWCe5G.jpg" alt="" style="height: 250px; display: block;">
-            </div>
-        </div>
-        <div class="row">
-            <div class="span3 offset3">
-                <h2>Grade: <button id="rating" class="btn info">9.2</button></h2>
-            </div>
-            <div class="span6">
-                <h2>Vote: <button id="upvote_recommendation_btn" class="btn success">+</button> <button id="downvote_recommendation_btn" class="btn danger">-</button></h2>
-            </div>
+    </div>-->
+    <div class="row">
+        <div class="span16" style="text-align: center;">
+            <h1><a href="{{ url_for("frontend.show_movie", id=recommendation.movies[0].id) }}">{{ recommendation.movies[0].title }}</a> and <a href="{{ url_for("frontend.show_movie", id=recommendation.movies[1].id) }}">{{ recommendation.movies[1].title }}</a> matches
+                of {{ recommendation.rating }}%?
+                <br><small>Do you agree?</small>
+            </h1>
         </div>
     </div>
-</div>
+    <div class="row">
+        <div class="span3">
+            {% if recommendation.movies[0].image_url %}
+                <img src="{{ recommendation.movies[0].image_url }}" alt=""
+                     style="width: 160px; display: block; margin-bottom: 5px;">
+            {% else %}
+                <div style="width: 160px; background: #e4e4e4; margin-bottom: 5px;">
+                    <div style=" border: 1px solid #ccc; height: 256px;">
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        <div class="span10">
+            <div id="new_reason">
+                <form id="new_reason_form" action="" method="post"
+                      class="form-stacked">
+                    <fieldset>
+                        <legend>Add reason</legend>
+                        {% if form.errors %}
+                            <div class="alert-message block-message error">
+                                <ul class="errors">
+                                    {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+                                        {% for error in field_errors %}
+                                            <li>{{ form[field_name].label.text }}: {{ error }}</li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+
+                        <div class="clearfix{% if form.reason.errors %} error{% endif %}">
+                            <div class="input">
+                                {{ form.reason(class_="xxlarge", placeholder="Motivate why you suggest rating the reason", rows="6") }}
+                            </div>
+                        </div>
+                        <div class="clearfix{% if form.rating.errors %} error{% endif %}">
+                            <label for="rating">Match %</label>
+
+                            <div class="input">
+                                <input type="range" id="rating" name="rating" class="xxlarge"
+                                       placeholder="Add new rating" min="0" max="100" value="{{ form.rating.data }}">
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn primary" value="save" type="submit">Add</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+
+            {% for reason in reasons %}
+                <div class="row">
+                    <div class="span1">
+                        {% if reason.author.photo_url %}
+                        <img src="{{ reason.author.photo_url }}" style="width: 40px;">
+                        {% else %}
+                            <div style="width: 40px; background: #e4e4e4; margin-bottom: 5px;">
+                                <div style=" border: 1px solid #ccc; height: 40px;">
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="span9">
+
+                        <p>
+                            <a href="#">{{ reason.author.full_name }}</a>
+                            {% if not reason.upvotes_count==0 %}
+                                and {{ reason.upvotes_count }} other{% endif %} gave a match
+                            of {{ reason.rating }}%
+                            to suggest that you should see both these movies if you not have because
+                        </p>
+                        <blockquote>
+                            <p>
+                                {{ reason.body }}
+                            </p>
+                        </blockquote>
+
+                        <div>
+                            <form action="{{ url_for("frontend.add_reason_vote", id=reason.id) }}" method="post">
+                            {% if user %}
+                            {% set vote = moviehub.check_reason_vote(reason.id) %}
+                            {% else %}
+                            {% set vote = false %}
+                            {% endif %}
+                            {% if vote %}
+                                {% set vote_type = vote.vote %}
+                            {% else %}
+                            {% endif %}
+                                <button id="upvote_recommendation_btn" name="vote_btn" value="up" type="submit" class="btn success">+{% if vote_type=="upvote" %} (remove){% endif %}</button>
+                                <button id="downvote_recommendation_btn" name="vote_btn" value="down" type="submit" class="btn danger">-{% if vote_type=="downvote" %} (remove){% endif %}</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="span3">
+            {% if recommendation.movies[1].image_url %}
+                <img src="{{ recommendation.movies[1].image_url }}" alt=""
+                     style="width: 160px; display: block; margin-bottom: 5px;">
+            {% else %}
+                <div style="width: 160px; background: #e4e4e4; margin-bottom: 5px;">
+                    <div style=" border: 1px solid #ccc; height: 256px;">
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}

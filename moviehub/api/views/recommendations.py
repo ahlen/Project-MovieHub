@@ -9,6 +9,48 @@ from moviehub.api import api
 from moviehub.core.models import Movie, Recommendation, RecommendationReason, ReasonVote
 from moviehub.api.utils import get_error_response
 
+@api.route("/api/recommendations/<int:id>/")
+@api.require_client
+def get_recommendation(id):
+    """
+    get recommendation by id
+
+    get data
+    ========
+    :param      include_top_reasons         when include_top_reasons is set to true,
+                                            the response includes the top 10 reasons
+                                            ordered by score
+    """
+    rec = Recommendation.get_by_id(id)
+    if not rec:
+        return get_error_response(
+            message="Resource not found",
+            status_code=404
+        )
+
+    include_reasons = request.args.get("include_top_reasons", False)
+    if include_reasons and include_reasons == "true":
+        include_reasons = True
+    else:
+        include_reasons = False
+
+    return json.dumps(rec.to_dict(include_top_reasons=True))
+
+@api.route("/api/recommendations/<int:id>/reasons/")
+def get_reasons_for_recommendations(id):
+    """
+    get all reasons for a recommendation ordered by score
+    """
+    rec = Recommendation.get_by_id(id)
+    if not rec:
+        return get_error_response(
+            message="Resource not found",
+            status_code=404
+        )
+
+    return json.dumps([reason.to_dict() for reason in rec.reasons.order("-score")])
+
+
 @api.route("/api/reasons/", methods=["POST"])
 @api.require_user
 def add_recommendation_reason():
@@ -246,12 +288,12 @@ def get_vote_for_reason(reason_id):
             message="Resource not found",
             status_code=404
         )
-    vote = ReasonVote.gql("WHERE ANCESTOR is :1 AND author = :2", reason, g.api_user)
+    vote = ReasonVote.gql("WHERE ANCESTOR is :1 AND author = :2", reason, g.api_user).get()
     if vote:
         return json.dumps(vote.to_dict())
 
     return get_error_response(
-        message="Resource not found",
+        message="Resource (vote for user) not found",
         status_code=404
     )
 
@@ -262,7 +304,7 @@ def get_recommendations(movie_id):
     movie = Movie.get_by_id(movie_id)
     if not movie:
         return get_error_response(
-            message="Could not find the resource",
+            message="Resource not found",
             status_code=404
         )
 

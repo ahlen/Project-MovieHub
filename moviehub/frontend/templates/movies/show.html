@@ -60,33 +60,29 @@
 
             <div style="width: 160px;">
                 <form action="{{ url_for("frontend.movie_like", id=movie.id) }}" method="post">
-                {% if like_movie %}
+                {% if user %}
+                {% if moviehub.check_like_movie(movie.id) %}
                     <button class="btn danger" style="width: 160px;">unlike</button>
                 {% else %}
                     <button class="btn success" style="width: 160px;">Like</button>
+                {% endif %}
+                {% else %}
+                    <button class="btn success" style="width: 160px;">like</button>
                 {% endif %}
                 </form>
             </div>
         </div>
 
         <div class="span13">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-              {% if messages %}
-              <div class="span13">
-                {% for category, message in messages %}
-                  <div class="alert-message {{ category }}"><p>{{ message }}</p></li>
-                {% endfor %}
-                </div>
-              {% endif %}
-            {% endwith %}
             <div class="span13">
-                <h1 style="margin-bottom: 5px;">{{ movie.title }}</h1>
+                <h1 style="margin-bottom: 5px;">{{ movie.title }} <small>({{ movie.imdb_id }})</small></h1>
 
                 <p>
                     {{ movie.description }}
                 </p>
             </div>
             <div class="span13">
+                {% if user %}
                 <div id="before_new_recommendation" style="display: none; padding-bottom: 10px;">
                     <button id="before_new_recommendation_btn" class="btn large primary">Add new recommendation</button>
                 </div>
@@ -131,10 +127,10 @@
                         </div>
                         <div class="actions">
                             <button class="btn primary" value="save" type="submit">Add</button>
-                            <button class="btn" type="reset">Cancel</button>
                         </div>
                     </fieldset>
                 </form>
+                {% endif %}
             </div>
 
             <div class="span13">
@@ -181,6 +177,10 @@
         $("#select-movie-btn").click(function () {
             $("#target_id").val($("input[name='selected_movie_id']:checked").val());
 
+            $("#find-movie-modal").modal("hide");
+        })
+
+        $("#cancel-movie-btn").click(function() {
             $("#find-movie-modal").modal("hide");
         })
 
