@@ -1,0 +1,39 @@
+{% extends "profiles/base_profile.html" %}
+
+{% block content %}
+    <div class="row">
+        <div class="span2">
+            <img src="{{ profile.photo_url }}" alt="" style="width: 100px;">
+        </div>
+        <div class="span14">
+            <div class="row">
+                <div class="span14">
+                    <h1>{{ profile.full_name }}</h1>
+                </div>
+                <div class="span14">
+                    {{ profile_navigation("likes", user_id=profile_id) }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="span14">
+                    {% if movies %}
+                        <ul style="margin: 0; padding: 0; list-style: none;">
+                    {% for movie in movies %}
+                        <li style="float: left; width: 250px; padding: 0 5px 10px 5px;">
+                            <div style="float: left; width: 20px;">
+                                {% if movie.image_url %}
+                                <img src="{{ movie.image_url }}" alt="{{ movie.title }}" style="height: 25px;">
+                                {% endif %}
+                            </div>
+                            <div style="margin-left: 30px;">
+                                <a href="{{ url_for("frontend.show_movie", id=movie.id) }}">{{ movie.title }}</a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

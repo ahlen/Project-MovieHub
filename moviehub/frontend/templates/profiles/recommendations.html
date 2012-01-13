@@ -1,0 +1,37 @@
+{% extends "profiles/base_profile.html" %}
+
+{% block content %}
+    <div class="row">
+        <div class="span2">
+            <img src="{{ profile.photo_url }}" alt="" style="width: 100px;">
+        </div>
+        <div class="span14">
+            <div class="row">
+                <div class="span14">
+                    <h1>{{ profile.full_name }}</h1>
+                </div>
+                <div class="span14">
+                    {{ profile_navigation("recommendations", user_id=profile_id) }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="span14">
+                    {% if recommendations %}
+                    <ul style="margin: 0; padding: 0; list-style: none;">
+                    {% for recommendation in recommendations %}
+                        <li style="overflow: hidden; margin-bottom: 5px;">
+                            <div style="float: left; width: 40px;">
+                                <img src="{{ recommendation.movies[0].image_url }}" alt="{{ recommendation.movies[0].title }}" style="width: 20px;"><img src="{{ recommendation.movies[1].image_url }}" alt="{{ recommendation.movies[1].title }}" style="width: 20px;">
+                            </div>
+                            <div style="margin-left: 50px;"><a href="{{ url_for("frontend.show_recommendation", id=recommendation.id) }}">{{ recommendation.movies[0].title }} and {{ recommendation.movies[1].title }} have a match of {{ recommendation.rating }}%</a></div>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p><em>No selected recommendations for {{ profile.full_name }}</em></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

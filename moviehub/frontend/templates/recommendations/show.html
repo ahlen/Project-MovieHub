@@ -1,57 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-    <!--<div class="row">
-        <div class="span12">
-            <div class="row">
-                <div class="span12">
-                    <h1>Relationship</h1>
-                </div>
-            </div>
-            <div class="row">
-                <div class="span3">
-                    <h1 style="margin-bottom: 5px;">Oldboy</h1>
-                </div>
-                <div class="span3 offset6">
-                    <h1 style="margin-bottom: 5px;">Akira</h1>
-                </div>
-            </div>
-            <div class="row">
-                <div class="span3">
-                    <img src="http://cf2.imgobject.com/t/p/w185/4S0GCbBgkbbDxEQ9CsMVOFxpyzr.jpg" alt=""
-                         style="height: 250px; display: block;">
-                </div>
-                <div class="span6">
-                    <h3>Hand in hand!</h3>
-
-                    <p>
-                        Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod
-                        tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis
-                        nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-                        Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel
-                        illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui
-                        blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
-                    </p>
-                </div>
-                <div class="span3">
-                    <img src="http://cf2.imgobject.com/t/p/w185/bIT9WbeTLbZrtU1CutDEHbWCe5G.jpg" alt=""
-                         style="height: 250px; display: block;">
-                </div>
-            </div>
-            <div class="row">
-                <div class="span3 offset3">
-                    <h2>Grade:
-                        <button id="rating" class="btn info">9.2</button>
-                    </h2>
-                </div>
-                <div class="span6">
-                    <h2>Vote:
-                        <button id="upvote_recommendation_btn" class="btn success">+</button>
-                        <button id="downvote_recommendation_btn" class="btn danger">-</button>
-                    </h2>
-                </div>
-            </div>
-        </div>
-    </div>-->
     <div class="row">
         <div class="span16" style="text-align: center;">
             <h1><a href="{{ url_for("frontend.show_movie", id=recommendation.movies[0].id) }}">{{ recommendation.movies[0].title }}</a> and <a href="{{ url_for("frontend.show_movie", id=recommendation.movies[1].id) }}">{{ recommendation.movies[1].title }}</a> matches
@@ -125,7 +73,7 @@
                     <div class="span9">
 
                         <p>
-                            <a href="#">{{ reason.author.full_name }}</a>
+                            <a href="{{ url_for("frontend.public_profile", id=reason.author.id) }}">{{ reason.author.full_name }}</a>
                             {% if not reason.upvotes_count==0 %}
                                 and {{ reason.upvotes_count }} other{% endif %} gave a match
                             of {{ reason.rating }}%
@@ -147,6 +95,7 @@
                             {% if vote %}
                                 {% set vote_type = vote.vote %}
                             {% else %}
+                                {% set vote_type = None %}
                             {% endif %}
                                 <button id="upvote_recommendation_btn" name="vote_btn" value="up" type="submit" class="btn success">+{% if vote_type=="upvote" %} (remove){% endif %}</button>
                                 <button id="downvote_recommendation_btn" name="vote_btn" value="down" type="submit" class="btn danger">-{% if vote_type=="downvote" %} (remove){% endif %}</button>

@@ -4,7 +4,7 @@ import httplib2
 import urllib
 import json
 
-from moviehubapi import exceptions, security, models
+from moviehubapi import exceptions, models
 
 class Moviehub(object):
     API_URL = "http://localhost:8081/api"

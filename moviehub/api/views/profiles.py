@@ -12,10 +12,11 @@ def me():
     return json.dumps(g.api_user.to_dict())
 
 @api.route("/api/profiles/<int:id>/")
+@api.require_client
 def profile(id):
     user = User.get_by_id(id)
     if not user:
-        get_error_response(
+        return get_error_response(
             message="Resource not found",
             status_code=404
         )

@@ -253,14 +253,18 @@ class ReasonVote(db.Model):
     def make_vote(cls, vote, user, parent):
         def vote_in_tx():
             v = cls.get_vote(user, parent)
-            if not v:
+
+            if not v: # if the vote doesn't exists we create a new object
                 v = ReasonVote(author=user, parent=parent)
             else:
-                parent.score += -(v.vote) # reset old vote
-                if v.vote >= 1:
-                    # if upvote we decrease the upvotes_count
-                    parent.upvotes_count += 1
+                # reset old vote
+                parent.score += -(v.vote)
+                if v.vote > 0:
+                    # if the vote was an upvote, we decrease
+                    # the upvotes count.
+                    parent.upvotes_count -= 1
 
+            # handle the new vote
             if vote == -1:
                 v.vote = cls.DOWNVOTE * user.trust_score
             elif vote == 1:
@@ -270,10 +274,13 @@ class ReasonVote(db.Model):
                 return
 
             parent.score += float(v.vote)
-            db.put([parent, v]) # save both parent and reason
+            db.put([parent, v]) # save both parent (reason) and vote
 
             return v
         vote = db.run_in_transaction(vote_in_tx)
+
+        from moviehub.core.tasks import update_recommendation_ranking
+        update_recommendation_ranking(parent.key())
 
         return vote
 
@@ -285,9 +292,13 @@ class ReasonVote(db.Model):
                 return False # return false if no vote exists
 
             parent.score += -(vote.vote)
-            parent.upvotes_count -= 1
+            if vote.vote > 0:
+                parent.upvotes_count -= 1
             vote.delete()
             parent.put()
+
+            from moviehub.core.tasks import update_recommendation_ranking
+            update_recommendation_ranking(parent.key())
 
             return True
         return db.run_in_transaction(delete_in_tx)

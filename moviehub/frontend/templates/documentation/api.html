@@ -4,20 +4,190 @@
     <div class="row">
         <div class="span16">
             <h1>API Documentation</h1>
-            [Intoduction and information about the API]
+            <p>
+                To consume the RESTful API it’s required to pass either the client id and client secret to get
+                client access which give the client the rights to read data, or pass an authentication token after
+                successful token exchange which give the client permission to perform both read and writes on behalf
+                of the user. The credentials can be passed via querystrings or the HTTP header and give equivalent
+                result.
+            </p>
+            <p>
+                Please contact us at mikhln-9 or edvbru-9 @ student.ltu.se if you want to build a 3rd party client.
+            </p>
         </div>
     </div>
     <div class="row">
         <div class="span16">
             <ul>
+                <li><a href="#token">Authentication token flow</a></li>
+                <li><a href="#users">User/profiles</a></li>
                 <li><a href="#movies">Movies</a></li>
                 <li><a href="#recommendations">Recommendations</a></li>
             </ul>
         </div>
     </div>
+
     <div class="row">
         <div class="span16">
-            <h2>Movies</h2>
+            <h2 id="token">Authentication token flow</h2>
+
+            <div class="row">
+                <div class="span16">
+                    <table class="zebra-striped">
+                        <thead>
+                        <tr>
+                            <th style="width: 300px;">Resource</th>
+                            <th>Usage</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
+                                GET /api/auth/<br>
+                            </td>
+                            <td>
+                                <p>
+                                    The first step (of 2) in the authentication token exchange flow and used by the
+                                    client to build a correct URI and redirects the user to authenticate
+                                    and redirects back to the clients <strong>redirect_uri</strong> a code to exchange for a token when successful login.
+                                </p>
+
+                                <h3>Parameters</h3>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>response_type</strong><br/>
+                                            required
+                                        </td>
+                                        <td>
+                                            response_type should be set to <strong>code</strong>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>client_id</strong><br/>
+                                            required
+                                        </td>
+                                        <td>
+                                            The client_id for your client
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                POST /api/auth/<br>
+                            </td>
+                            <td>
+                                <p>
+                                    The second and last step in the authentication token exchange flow and used by the
+                                    client to exchange the returned code in step one for an authentication token for
+                                    user access.
+                                </p>
+
+                                <h3>Parameters</h3>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>response_type</strong><br>
+                                            required
+                                        </td>
+                                        <td>
+                                            response_type should be set to <strong>token</strong>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>client_id</strong><br/>
+                                            required
+                                        </td>
+                                        <td>
+                                            The client_id for your client
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>client_secret</strong><br/>
+                                            required
+                                        </td>
+                                        <td>
+                                            The client_secret for your client
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="span16">
+            <h2 id="users">Profiles</h2>
+
+            <div class="row">
+                <div class="span16">
+                    <table class="zebra-striped">
+                        <thead>
+                        <tr>
+                            <th style="width: 300px;">Resource</th>
+                            <th>Usage</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
+                                GET /api/me/<br>
+                                <span class="label notice">Require user access</span>
+                            </td>
+                            <td>
+                                <p>
+                                    Get the current user profile information
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                GET /api/profiles/{id}/<br>
+                            </td>
+                            <td>
+                                <p>
+                                    Get the profile info by the user id
+                                </p>
+
+                                <h3>Parameters</h3>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>id</strong><br>
+                                            required
+                                        </td>
+                                        <td>
+                                            id should be an existing id to an user
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="span16">
+            <h2 id="movies">Movies</h2>
 
             <div class="row">
                 <div class="span16">
@@ -37,6 +207,7 @@
                                 <p>
                                     Used to get a list of all movies.
                                 </p>
+
                                 <h3>Parameters</h3>
                                 <table>
                                     <tbody>
@@ -82,6 +253,7 @@
                                 <p>
                                     Used to like a movie as the current user
                                 </p>
+
                                 <h3>Parameters</h3>
                                 <table>
                                     <tbody>
@@ -107,6 +279,7 @@
                                 <p>
                                     Used to remove liked movie from the current user
                                 </p>
+
                                 <h3>Parameters</h3>
                                 <table>
                                     <tbody>
@@ -123,213 +296,373 @@
                                 </table>
                             </td>
                         </tr>
+                        <tr>
+                            <td>
+                                POST /api/users/{id}/likes/<br>
+                            </td>
+                            <td>
+                                <p>
+                                    Get a list of liked movies by the id of the user
+                                </p>
+
+                                <h3>Parameters</h3>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>id</strong><br>
+                                            required
+                                        </td>
+                                        <td>
+                                            id should be an existing id to an user
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>include_remote</strong><br>
+                                            optional
+                                        </td>
+                                        <td>
+                                            When set to true, the lists contains image_url and description
+                                            if available from TMDb
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>only_ids</strong><br>
+                                            optional
+                                        </td>
+                                        <td>
+                                            when only_ids is set the list of movies contains only ids
+                                            of the liked movies
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                POST /api/me/likes/<br>
+                                <span class="label notice">Require user access</span>
+                            </td>
+                            <td>
+                                <p>
+                                    Get a list of liked movies by the current user
+                                </p>
+
+                                <h3>Parameters</h3>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>include_remote</strong><br>
+                                            optional
+                                        </td>
+                                        <td>
+                                            When set to true, the lists contains image_url and description
+                                            if available from TMDb
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 150px">
+                                            <strong>only_ids</strong><br>
+                                            optional
+                                        </td>
+                                        <td>
+                                            when only_ids is set the list of movies contains only ids
+                                            of the liked movies
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+    <div class="span16">
+        <h2 id="recommendations">Recommendations</h2>
+
+        <div class="row">
+            <div class="span16">
+                <table class="zebra-striped">
+                    <thead>
+                    <tr>
+                        <th style="width: 300px;">Resource</th>
+                        <th>Usage</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            POST /api/reasons/<br>
+                            <span class="label notice">Require user access</span>
+                        </td>
+                        <td>
+                            <p>
+                                Used to add a recommendation reason for two related movies, if no relationship between
+                                the movies are present, it is created
+                            </p>
+
+                            <h3>Parameters</h3>
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <td style="width: 150px">
+                                        <strong>movie_ids</strong><br/>
+                                        required
+                                    </td>
+                                    <td>
+                                        a comma-separated list with two movie IDs
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 150px">
+                                        <strong>body</strong><br/>
+                                        required
+                                    </td>
+                                    <td>
+                                        a string which length is in between 4 to 1024
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 150px">
+                                        <strong>rating</strong><br/>
+                                        required
+                                    </td>
+                                    <td>
+                                        integer ranging from 0 to 100
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            PUT /api/reasons/{id}/<br>
+                            <span class="label notice">Require user access</span>
+                        </td>
+                        <td>
+                            <p>
+                                Used to edit a existing reason
+                            </p>
+
+                            <h3>Parameters</h3>
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <td style="width: 150px">
+                                        <strong>body</strong><br>
+                                        required
+                                    </td>
+                                    <td>
+                                        a string which length is in between 4 to 1024
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 150px">
+                                        <strong>rating</strong><br>
+                                        required
+                                    </td>
+                                    <td>
+                                        integer ranging from 0 to 100
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            POST /api/reasons/{id}/vote/<br>
+                            <span class="label notice">Require user access</span>
+                        </td>
+                        <td>
+                            <p>
+                                Used to cast a vote on a recommendation, or update if changed your mind
+                            </p>
+
+                            <h3>Parameters</h3>
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <td style="width: 150px">
+                                        <strong>vote</strong><br>
+                                        required
+                                    </td>
+                                    <td>
+                                        vote should be "up" or "down"
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            DELETE /api/reasons/{id}/vote/<br>
+                            <span class="label notice">Require user access</span>
+                        </td>
+                        <td>
+                            <p>
+                                Used to delete a vote on a recommendation
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            GET /api/reasons/{id}/vote/<br>
+                            <span class="label notice">Require user access</span>
+                        </td>
+                        <td>
+                            <p>
+                                Used to show your vote on a recommendation
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            GET /api/movies/{id}/recommendations/<br>
+                        </td>
+                        <td>
+                            <p>
+                                Used to show recommendations for a movie(in order of rating)
+                            </p>
+
+                            <h3>Parameters</h3>
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <td style="width: 150px">
+                                        <strong>movie_id</strong><br>
+                                        required
+                                    </td>
+                                    <td>
+                                        a correct movie_id
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            GET /api/reasons/{id}/<br>
+                        </td>
+                        <td>
+                            <p>
+                                Shows the reason
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            GET /api/recommendations/exists/<br>
+                        </td>
+                        <td>
+                            <p>
+                                Used to show if a recommendation exists between two movies
+                            </p>
+
+                            <h3>Parameters</h3>
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <td style="width: 150px">
+                                        <strong>movie_ids</strong><br>
+                                        required
+                                    </td>
+                                    <td>
+                                        a comma-separated list of two valid IDs for movies
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            GET /api/me/recommendations/<br>
+                            <span class="label notice">required user access</span>
+                        </td>
+                        <td>
+                            <p>
+                                Get the recommendations where the current user have highest ranking on
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            GET /api/users/{id}/recommendations/<br>
+                        </td>
+                        <td>
+                            <p>
+                                Get the recommendations where the user have highest ranking on
+                            </p>
+
+                            <h3>Parameters</h3>
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <td style="width: 150px">
+                                        <strong>id</strong><br>
+                                        required
+                                    </td>
+                                    <td>
+                                        id should be an existing id to an user
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            GET /api/me/reasons/<br>
+                            <span class="label notice">required user access</span>
+                        </td>
+                        <td>
+                            <p>
+                                Get the reasons that the current user have created
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            GET /api/users/{id}/reasons/<br>
+                        </td>
+                        <td>
+                            <p>
+                                Get the reasons that the user have created
+                            </p>
+
+                            <h3>Parameters</h3>
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <td style="width: 150px">
+                                        <strong>id</strong><br>
+                                        required
+                                    </td>
+                                    <td>
+                                        id should be an existing id to an user
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-
-    <div class="row">
-        <div class="span16">
-            <h2>Recommendations</h2>
-
-            <div class="row">
-                <div class="span16">
-                    <table class="zebra-striped">
-                        <thead>
-                        <tr>
-                            <th style="width: 300px;">Resource</th>
-                            <th>Usage</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td>
-                                POST /api/reasons/<br>
-                                <span class="label notice">Require user access</span>
-                            </td>
-                            <td>
-                                <p>
-                                    Used to add a recommendation reason for two related movies, if no relationship between the movies are present, it is created
-                                </p>
-                                <h3>Parameters</h3>
-                                <table>
-                                    <tbody>
-                                    <tr>
-                                        <td style="width: 150px">
-                                            <strong>movie_ids</strong><br/>
-                                            required
-                                        </td>
-                                        <td>
-                                            a comma-separated list with two movie IDs
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="width: 150px">
-                                            <strong>body</strong><br/>
-                                            required
-                                        </td>
-                                        <td>
-                                            a string which length is in between 4 to 1024
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="width: 150px">
-                                            <strong>rating</strong><br/>
-                                            required
-                                        </td>
-                                        <td>
-                                            integer ranging from 0 to 100
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                PUT /api/reasons/{id}/<br>
-                                <span class="label notice">Require user access</span>
-                            </td>
-                            <td>
-                                <p>
-                                  Used to edit a existing reason
-                                </p>
-                                <h3>Parameters</h3>
-                                <table>
-                                    <tbody>
-                                    <tr>
-                                        <td style="width: 150px">
-                                            <strong>body</strong><br>
-                                            required
-                                        </td>
-                                        <td>
-                                            a string which length is in between 4 to 1024
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="width: 150px">
-                                            <strong>rating</strong><br>
-                                            required
-                                        </td>
-                                        <td>
-                                            integer ranging from 0 to 100
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                POST /api/reasons/{id}/vote/<br>
-                                <span class="label notice">Require user access</span>
-                            </td>
-                            <td>
-                                <p>
-                                    Used to cast a vote on a recommendation, or update if changed your mind
-                                </p>
-                                <h3>Parameters</h3>
-                                <table>
-                                    <tbody>
-                                    <tr>
-                                        <td style="width: 150px">
-                                            <strong>vote</strong><br>
-                                            required
-                                        </td>
-                                        <td>
-                                            vote should be "up" or "down"
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                DELETE /api/reasons/{id}/vote/<br>
-                                <span class="label notice">Require user access</span>
-                            </td>
-                            <td>
-                                <p>
-                                    Used to delete a vote on a recommendation
-                                </p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                GET /api/reasons/{id}/vote/<br>
-                                <span class="label notice">Require user access</span>
-                            </td>
-                            <td>
-                                <p>
-                                    Used to show your vote on a recommendation
-                                </p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                GET /api/movies/{id}/recommendations/"<br>
-                            </td>
-                            <td>
-                                <p>
-                                    Used to show recommendations for a movie(in order of rating)
-                                </p>
-                                <h3>Parameters</h3>
-                                <table>
-                                    <tbody>
-                                    <tr>
-                                        <td style="width: 150px">
-                                            <strong>movie_id</strong><br>
-                                            required
-                                        </td>
-                                        <td>
-                                            a correct movie_id
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                GET /api/reasons/{id}/"<br>
-                            </td>
-                            <td>
-                                <p>
-                                    Shows the reason
-                                </p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                GET /api/recommendations/exists/"<br>
-                            </td>
-                            <td>
-                                <p>
-                                    Used to show if a recommendation exists between two movies
-                                </p>
-                                <h3>Parameters</h3>
-                                <table>
-                                    <tbody>
-                                    <tr>
-                                        <td style="width: 150px">
-                                            <strong>movie_ids</strong><br>
-                                            required
-                                        </td>
-                                        <td>
-                                            a comma-separated list of two valid IDs for movies
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
     </div>
 {% endblock %}

@@ -24,7 +24,7 @@
                 <h3>{{ target.title }}</h3>
 
                 <p>
-                    <a href="#">{{ recommendation.author.full_name }}</a>{% if not recommendation.upvotes_count==0 %}
+                    <a href="{{ url_for("frontend.public_profile", id=recommendation.author.id) }}">{{ recommendation.author.full_name }}</a>{% if not recommendation.upvotes_count==0 %}
                     and {{ recommendation.upvotes_count }} other{% endif %} gave a match of {{ recommendation.rating }}%
                     to suggest that you also should see <a
                         href="{{ url_for("frontend.show_movie", id=target.id) }}">{{ target.title }}</a> if you

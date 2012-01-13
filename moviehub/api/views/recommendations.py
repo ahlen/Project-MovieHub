@@ -6,7 +6,7 @@ from google.appengine.ext import db
 import json
 
 from moviehub.api import api
-from moviehub.core.models import Movie, Recommendation, RecommendationReason, ReasonVote
+from moviehub.core.models import Movie, Recommendation, RecommendationReason, ReasonVote, User
 from moviehub.api.utils import get_error_response
 
 @api.route("/api/recommendations/<int:id>/")
@@ -312,7 +312,6 @@ def get_recommendations(movie_id):
 
     return json.dumps([rec.to_dict() for rec in recs])
 
-
 @api.route("/api/reasons/<int:id>/")
 @api.require_client
 def get_reason(id):
@@ -384,3 +383,41 @@ def get_recommendation_exists():
     if rec:
         return "True"
     return "False"
+
+@api.route("/api/me/recommendations/")
+@api.require_user
+def current_user_recommendations():
+    return _user_recommendations(None)
+
+@api.route("/api/users/<int:id>/recommendations/")
+@api.require_client
+def client_user_recommendations(id):
+    return _user_recommendations(id)
+
+def _user_recommendations(id):
+    if id:
+        user = User.get_by_id(id)
+    else:
+        user = g.api_user
+    recommendations = Recommendation.gql("WHERE author = :1", user)
+
+    return json.dumps([rec.to_dict() for rec in recommendations])
+
+@api.route("/api/me/reasons/")
+@api.require_user
+def current_user_reasons():
+    return _user_reasons(None)
+
+@api.route("/api/users/<int:id>/reasons/")
+@api.require_client
+def client_user_reasons(id):
+    return _user_reasons(id)
+
+def _user_reasons(user_id):
+    if user_id:
+        user = User.get_by_id(user_id)
+    else:
+        user = g.api_user
+    reasons = RecommendationReason.gql("where author = :1", user)
+
+    return json.dumps([reason.to_dict(include_recommendation=True) for reason in reasons])

@@ -4,7 +4,7 @@ import httplib2
 import urllib
 import json
 
-from moviehubapi import exceptions, security, models
+from moviehubapi import exceptions, models
 
 import os
 
@@ -16,9 +16,9 @@ class Moviehub(object):
 
     # TODO: just for dev. we need to use localhost...
     #if os.environ['SERVER_SOFTWARE'].startswith('Development'):
-    API_URL = "http://localhost:8081/api"
+    #API_URL = "http://localhost:8081/api"
     #else:
-    #API_URL = "http://movie-hub.appspot.com/api"
+    API_URL = "https://movie-hub.appspot.com/api"
 
     def __init__(self, client_id, client_secret, redirect_uri=None, access_token=None):
         self.client_id = client_id
@@ -63,6 +63,11 @@ class Moviehub(object):
             self._handle_error(content)
         return models.User.from_dict(json.loads(content))
 
+    def profile(self, id):
+        response, content = self._client_request("/profiles/%d/" % id)
+        if not response.status == 200:
+            self._handle_error(content)
+        return models.User.from_dict(json.loads(content))
 
     # movies
     # ======
@@ -90,6 +95,20 @@ class Moviehub(object):
             self._handle_error(content)
 
         return models.Movie.from_dict(json.loads(content))
+
+    def liked_movies(self, user_id=None):
+        """
+        return a list of liked movies by user id
+        otherwise return the current user likes
+        """
+        if user_id:
+            response, content = self._client_request("/users/%d/likes/?include_remote=true" % user_id)
+        else:
+            response, content = self._user_request("/me/likes/?include_remote=true")
+        if not response.status == 200:
+            self._handle_error(content)
+
+        return [models.Movie.from_dict(movie) for movie in json.loads(content)]
 
     def like_movie(self, id):
         """
@@ -151,6 +170,30 @@ class Moviehub(object):
         if not response.status == 200:
             self._handle_error(content)
         return models.Recommendation.from_dict(json.loads(content))
+
+    def user_recommendations(self, user_id=None):
+        """
+        """
+        if user_id:
+            response, content = self._client_request("/users/%d/recommendations/" % user_id)
+        else:
+            response, content = self._user_request("/me/recommendations/")
+        if not response.status == 200:
+            self._handle_error(content)
+
+        return [models.Recommendation.from_dict(r) for r in json.loads(content)]
+
+    def user_reasons(self, user_id=None):
+        """
+        """
+        if user_id:
+            response, content = self._client_request("/users/%d/reasons/" % user_id)
+        else:
+            response, content = self._user_request("/me/reasons/")
+        if not response.status == 200:
+            self._handle_error(content)
+
+        return [models.Reason.from_dict(r) for r in json.loads(content)]
 
     def add_reason(self, movie_ids, rating, body):
         """

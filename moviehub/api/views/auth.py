@@ -126,7 +126,7 @@ def request_token():
             user.token_expiry = cred.token_expiry
             user.refresh_token = cred.refresh_token
             # update picture just in case...
-            user.photo_url=user_data["picture"]
+            user.photo_url=user_data.get("picture", "")
             user.put()
 
             session["user_id"] = user.key().id()
@@ -140,8 +140,8 @@ def request_token():
                 # we save email, name and id from the user_data dict
                 full_name=user_data.get("name", user_data["id"]), # try to get name, otherwise we use the id
                 google_id=user_data["id"],
-                photo_url=user_data["picture"],
-                email=user_data["email"]
+                photo_url=user_data.get("picture"),
+                email=user_data.get("email", "")
             )
             user.put()
 

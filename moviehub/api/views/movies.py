@@ -4,7 +4,7 @@ import json
 from flask.globals import g
 
 from moviehub.api import api # import our blueprint
-from moviehub.core.models import Movie
+from moviehub.core.models import Movie, User
 from moviehub.api.utils import get_error_response, json_result
 
 
@@ -143,3 +143,56 @@ def like_movie(id):
             status_code=400
         )
     return "false"
+
+
+@api.route("/api/users/<int:user_id>/likes/")
+@api.require_client
+def client_likes_by_user(user_id):
+    return _likes_by_user(user_id)
+
+@api.route("/api/me/likes/")
+@api.require_user
+def likes_by_current_user():
+    return _likes_by_user(None)
+
+def _likes_by_user(user_id):
+    """
+    returns a list of all movies which chosen user likes
+
+    get data
+    ========
+    :param      include_remote      (optional) When set to true, the lists
+                                    contains image_url and description
+                                    if available from TMDb
+
+    :param      only_ids            (optional) when only_ids is set the list of movies
+                                    contains ids
+    """
+
+    include_remote = request.args.get("include_remote", False)
+    only_ids = request.args.get("only_ids", False)
+
+    if include_remote and include_remote == "true":
+        include_remote = True
+    else:
+        include_remote = False
+
+    if only_ids and only_ids == "true":
+        only_ids = True
+    else:
+        only_ids = False
+
+    if user_id:
+        user = User.get_by_id(user_id)
+    else:
+        user = g.api_user
+    if not user:
+        return get_error_response(
+            message="Resource not found",
+            status_code=404
+        )
+
+    movies = Movie.gql("WHERE likes = :1", user.key()).fetch(10000)
+
+    return json.dumps([movie.to_dict(include_remote=include_remote, only_id=only_ids) for movie in movies])
+

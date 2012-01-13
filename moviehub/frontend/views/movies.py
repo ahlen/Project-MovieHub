@@ -34,6 +34,9 @@ def show_movie(id):
                 return redirect(url_for("frontend.show_movie", id=id))
 
         movie = moviehub.movie(id)
+        if not movie:
+            flash("Movie doesn't exists", "error")
+            return redirect("/movies/")
         recommendations = moviehub.recommendations(id)
     except exceptions.MoviehubApiError as ex:
         return "%s: %s" % (ex.type, ex.message)

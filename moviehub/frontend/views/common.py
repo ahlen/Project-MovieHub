@@ -3,9 +3,6 @@ from flask import render_template, request, session, redirect
 
 from moviehub.frontend import frontend, moviehub
 
-#@frontend.route("/")
-#def index():
-#    return render_template("common/index.html")
 from moviehub.frontend.utils import login_required
 
 @frontend.route("/auth/")

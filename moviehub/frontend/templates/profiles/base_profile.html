@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% macro profile_navigation(current, user_id) %}
+    {% if not user_id %}
+        {% set nav = (("/me/", "Liked movies", "likes"), ("/me/recommendations/", "Selected recommendations", "recommendations"), ("/me/reasons/", "Reasons", "reasons")) %}
+    {% else %}
+        {% set nav = (("/users/%d/" % user_id, "Liked movies", "likes"), ("/users/%d/recommendations/" % user_id, "Selected recommendations", "recommendations"), ("/users/%d/reasons/" % user_id, "Reasons", "reasons")) %}
+    {% endif %}
+    <ul class="tabs">
+    {% for item in nav %}
+        <li{% if current == item[2] %} class="active"{% endif %}><a href="{{ item[0] }}">{{ item[1] }}</a></li>
+    {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% block content %}
+
+{% endblock %}
