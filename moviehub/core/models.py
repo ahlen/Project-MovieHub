@@ -13,7 +13,7 @@ class User(db.Model):
     access_token = db.StringProperty()
     token_expiry = db.DateTimeProperty()
     refresh_token = db.StringProperty()
-    photo_url = db.LinkProperty()
+    photo_url = db.LinkProperty(required=False)
     created_at = db.DateTimeProperty(auto_now_add=True)
     updated_at = db.DateTimeProperty(auto_now=True)
     trust_score = db.FloatProperty(default=1.0)
